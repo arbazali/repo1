@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shahtaj &amp; Arbaz — Wedding Invitation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     GATE — ENVELOPE SCREEN
+══════════════════════════════════ -->
+<section id="gate">
+  <div class="gate-bg" aria-hidden="true"></div>
+
+  <div class="gate-bokeh" aria-hidden="true">
+    <span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+  </div>
+  <div id="gatePetals" aria-hidden="true"></div>
+
+  <p class="gate-eyebrow">You are cordially invited</p>
+  <p class="gate-names">Shahtaj <span>&amp;</span> Arbaz</p>
+
+  <div class="envelope" id="envelope">
+    <img class="env-body" src="img/envelope-body.png.webp" alt="" draggable="false">
+    <div class="env-flap-wrap" id="envFlapWrap">
+      <img class="env-flap" src="img/envelope-flap.png.webp" alt="" draggable="false">
+    </div>
+    <button class="env-seal-btn" id="gateOpen" aria-label="Tap to open your invitation">
+      <img class="env-seal" src="img/wax-seal.png" alt="" draggable="false">
+    </button>
+  </div>
+
+  <div class="gate-tap" id="gateTap">
+    <span class="gate-tap-line"></span>
+    <span class="gate-tap-text">Tap to Open</span>
+    <span class="gate-tap-line gate-tap-line-r"></span>
+  </div>
+
+</section>
+
+
+<!-- ══════════════════════════════════
+     MAIN CARD
+══════════════════════════════════ -->
+<div class="stage">
+<div class="card">
+
+
+<!-- 1. COVER -->
+<section class="cover">
+  <div class="cover-bg" style="background-image:url('img/Background-mob.svg.webp')"></div>
+  <!-- <div class="cover-artwork-bg" aria-hidden="true">
+    <img src="img/artwork/bride-groom.png" alt="" draggable="false">
+  </div> -->
+  <!-- <div class="cover-overlay"></div> -->
+  <!-- <div class="cover-content sf">
+    <p class="cover-bismillah">﷽</p>
+    <p class="cover-pre">Together with their families</p>
+    <h1 class="cover-name">Shahtaj</h1>
+    <p class="cover-weds">— weds —</p>
+    <h1 class="cover-name">Arbaz</h1>
+  </div> -->
+</section>
+
+
+
+
+
+<!-- 3. GREETING -->
+<section class="greeting-sec">
+  <div class="greeting-bg"></div>
+  <div class="greeting-overlay"></div>
+</section>
+
+
+<!-- 5. FAMILIES -->
+<section class="sec families-sec">
+  <div class="families-bg"></div>
+  <!-- <span class="sec-label sf">Our Families</span> -->
+  <h2 class="sec-fam-h sf d1">With the Blessings of</h2>
+  <div class="orn sf d2">
+    <div class="orn-line rev"></div>
+    <span class="orn-gem">❊</span>
+    <div class="orn-line"></div>
+  </div>
+  <div class="families-list">
+    <p class="fam-group-header sf">Bride's Family</p>
+    <div class="fam-row sf d1">
+      <p class="fam-name">Mr. &amp; Mrs. Jahangir Bakht</p>
+      <p class="fam-role">Parents of the Bride</p>
+    </div>
+    <div class="fam-row sf d2">
+      <p class="fam-name">Mr. &amp; Mrs. Kamran Bakht</p>
+      <p class="fam-role">Sister in Law &amp; Brother of the Bride</p>
+    </div>
+    <div class="fam-row sf d3">
+      <p class="fam-name">Mr. &amp; Mrs. Ali Bakht</p>
+      <p class="fam-role">Sister in Law &amp; Brother of the Bride</p>
+    </div>
+    <div class="fam-row sf d4">
+      <p class="fam-name">Mr. Fahad Bakht</p>
+      <p class="fam-role">Brother of the Bride</p>
+    </div>
+    <div class="fam-row sf d5">
+      <p class="fam-name">Mr. &amp; Mrs. Khalil Ahmed</p>
+      <p class="fam-role">Sister &amp; Brother in Law of the Bride</p>
+    </div>
+     <div class="fam-row sf d5">
+      <p class="fam-name">Suhaymah and Umaiza</p>
+      <p class="fam-role">Niece of the Bride (Bridesmaid)</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- 2. COUNTDOWN + SCHEDULE (one section, fixed bg, JS panels) -->
+<section class="countdown-sec" id="countdownSec">
+  <div class="cs-bg"><div class="cs-bg-img"></div></div>
+
+  <!-- Panel 1: Countdown -->
+  <div class="cs-panel cs-panel-countdown">
+    <p class="cd-heading sf">✦ OUR WEDDING COUNTDOWN ✦</p>
+    <p class="cd-event sf d1">Our Forever Begins</p>
+    <p class="cd-date sf d2">21 November 2026</p>
+    <div class="cd-wrap sf d3">
+      <div class="cd-cell">
+        <span class="cd-num" id="cd-d">000</span>
+        <span class="cd-lbl">Days</span>
+      </div>
+      <span class="cd-colon">:</span>
+      <div class="cd-cell">
+        <span class="cd-num" id="cd-h">00</span>
+        <span class="cd-lbl">Hours</span>
+      </div>
+      <span class="cd-colon">:</span>
+      <div class="cd-cell">
+        <span class="cd-num" id="cd-m">00</span>
+        <span class="cd-lbl">Mins</span>
+      </div>
+      <span class="cd-colon">:</span>
+      <div class="cd-cell">
+        <span class="cd-num" id="cd-s">00</span>
+        <span class="cd-lbl">Secs</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 2: Evening Schedule -->
+  <div class="cs-panel cs-panel-schedule">
+    <div class="schedule-inner">
+      <p class="schedule-label sf">Baraat · 21 November 2026</p>
+      <h2 class="schedule-h sf d1">Evening Programme</h2>
+      <div class="schedule-orn sf d2">
+        <span class="schedule-orn-line"></span>
+        <span class="schedule-orn-gem">✦</span>
+        <span class="schedule-orn-line"></span>
+      </div>
+      <ul class="schedule-list">
+        <li class="schedule-item sf d1">
+          <span class="schedule-time">7:00 PM</span>
+          <div class="schedule-node">
+            <div class="schedule-dot"></div>
+            <div class="schedule-connector"></div>
+          </div>
+          <span class="schedule-name">Guest Arrival</span>
+        </li>
+        <li class="schedule-item sf d2">
+          <span class="schedule-time">8:00 PM</span>
+          <div class="schedule-node">
+            <div class="schedule-dot"></div>
+            <div class="schedule-connector"></div>
+          </div>
+          <span class="schedule-name">Event Start</span>
+        </li>
+        <li class="schedule-item sf d3">
+          <span class="schedule-time">8:30 PM</span>
+          <div class="schedule-node">
+            <div class="schedule-dot"></div>
+            <div class="schedule-connector"></div>
+          </div>
+          <span class="schedule-name">Dinner</span>
+        </li>
+        <li class="schedule-item sf d4">
+          <span class="schedule-time">9:30 PM</span>
+          <div class="schedule-node">
+            <div class="schedule-dot schedule-dot-final"></div>
+          </div>
+          <span class="schedule-name">Rukhsti</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Panel 3: Closing -->
+  <div class="cs-panel cs-panel-closing">
+    <div class="orn sf d1" style="margin-bottom:28px">
+      <div class="orn-line rev" style="background:linear-gradient(to left,transparent,rgba(205,164,94,.4))"></div>
+      <span class="orn-gem" style="color:var(--goldorg)">✦</span>
+      <div class="orn-line" style="background:linear-gradient(to right,transparent,rgba(205,164,94,.4))"></div>
+    </div>
+    <p class="closing-msg sf d2">Cannot wait to see you there</p>
+    <p class="closing-body sf d3">
+      Your presence, your prayers,<br/>
+      and your joy are the blessing<br/>
+      we are asking for.
+    </p>
+    <p class="closing-names sf d4">Shahtaj &nbsp; &amp; &nbsp; Arbaz</p>
+    <div class="orn sf d5" style="margin-top:40px">
+      <div class="orn-line rev" style="background:linear-gradient(to left,transparent,rgba(205,164,94,.3))"></div>
+      <span class="orn-gem" style="color:rgba(205,164,94,.5);font-size:.75rem">❊</span>
+      <div class="orn-line" style="background:linear-gradient(to right,transparent,rgba(205,164,94,.3))"></div>
+    </div>
+    <p class="closing-footer sf d5">21 November 2026 </p>
+    <p class="closing-footer sf d5">Islamabad, Pakistan</p>
+  </div>
+</section>
+
+
+<!-- 4. COUPLE PORTRAITS -->
+<section class="couple-sec">
+  <div class="couple-bg"></div>
+  <div class="couple-overlay"></div>
+  <a class="couple-dir-btn" href="https://maps.app.goo.gl/vcxZDA2A9ikBnaFt5" target="_blank" rel="noopener">
+    <span class="couple-dir-icon">📍</span> Get Direction
+  </a>
+</section>
+
+
+
+</div><!-- /card -->
+</div><!-- /stage -->
+
+<div class="cover-scroll" id="scrollHint" aria-hidden="true">
+  <span>Scroll Down</span>
+  <svg class="cover-scroll-arrow" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</div>
+
+<button class="music-btn" id="musicBtn" aria-label="Toggle music">
+  <!-- playing -->
+  <svg class="music-btn-on" viewBox="0 0 24 24" fill="currentColor" width="17" height="17">
+    <path d="M9 3v12.26A3.5 3.5 0 1 0 11 18V7h6V3H9z"/>
+  </svg>
+  <!-- paused -->
+  <svg class="music-btn-off" viewBox="0 0 24 24" fill="currentColor" width="17" height="17">
+    <path d="M9 3v12.26A3.5 3.5 0 1 0 11 18V7h6V3H9z" opacity=".35"/>
+    <line x1="2" y1="2" x2="22" y2="22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<script src="js/app.js"></script>
+</body>
+</html>

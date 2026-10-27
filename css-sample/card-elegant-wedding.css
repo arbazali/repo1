@@ -1,0 +1,2726 @@
+/* Elegant Wedding.
+
+   The first design built from photographed artwork rather than drawn shapes,
+   which changes two things about how it is styled.
+
+   It is drawn at a fixed width and centred, because the paper is a photograph
+   at a fixed size: stretched across a desktop it stops looking like an
+   envelope and starts looking like a texture. Every guest sees the same card
+   at the same proportions, and there is only ever one set of screenshots.
+
+   And its cover does not recolour. The seal is photographed wax; a maroon
+   seal tinted teal reads as a mistake, not a choice. Everything below the
+   cover routes through the shared tokens as usual.
+*/
+
+:root {
+  /* The width the whole design is composed at. Every size below is in
+     proportion to this, so changing it scales the card rather than reflowing
+     it. */
+  --ew-w: 390px;
+
+  /* The design's own colours -- maroon and gold, exactly as lib/color.js
+     computes them from this design's own palette (lib/templates/elegant-
+     wedding.js). A card kept in its own colours is sent no inline style at
+     all -- paletteStyleFor treats "nothing chosen" as "the design's own by
+     definition" and injects nothing, on purpose, so the artwork is served as
+     it was painted rather than re-tinted to a colour it already is. That
+     only works if the stylesheet actually holds these values to fall back
+     to; without them every var() below resolved to nothing and the card
+     rendered in whatever colour the browser felt like -- which is what
+     happened here. Regenerate this block with paletteToStyle(withArt(key,
+     paletteFrom(definition.palette))) if the design's base palette ever
+     changes. */
+  --maroon: #58111a;
+  --primary: #58111a;
+  --secondary: #d6b26a;
+  --box-bg: color-mix(in srgb, #58111a 20%, #ffffff 80%);
+  --box-border: #58111a;
+  --on-maroon: #ffffff;
+  --maroon-deep: #390b11;
+  --maroon-light: #763c43;
+  --maroon-pale: #bca0a3;
+  --gold: #d6b26a;
+  --on-gold: #2f2717;
+  --gold-light: #e4cd9e;
+  --gold-deep: #a18650;
+  --cream: #fdfaf6;
+  --cream-deep: #f9f4ea;
+  --ink: #420d14;
+  --ink-soft: #623f44;
+  --shadow: 0 20px 55px rgba(0, 0, 0, 0.22);
+  --rose-dark: #58111a;
+  --rose-mid: #7d454c;
+  --leaf: #513b2c;
+  --lehnga: #58111a;
+  --lehnga-soft: #8d5d63;
+  --sherwani: #d6b26a;
+  /* No --ew-art-cover, --ew-art-cover-web or --ew-art-wax here on purpose.
+
+     This file's own header says why: the cover and the seal are photographed
+     artwork, not flat shapes, and "its cover does not recolour... a maroon
+     seal tinted teal reads as a mistake, not a choice." The tinter is built
+     for line art -- a handful of flat fills -- and run against a painting's
+     hundreds of shades it doesn't fail, it just doesn't land: even tinting
+     TO this design's own maroon came back visibly pink, because the tint
+     math isn't a clean identity on a gradient. These three stay on the
+     stylesheet's own var(--ew-art-cover, url(/css/raw file)) fallback below,
+     which is the artwork exactly as it was painted -- never routed through
+     the tinter, not even for the design's own colours. */
+  --ew-art-guests: url('/art/elegant-wedding/Dear-guest-mob.svg?c=58111a&d=d6b26a');
+  --ew-art-guests-web: url('/art/elegant-wedding/Dear-guest-web.svg?c=58111a&d=d6b26a');
+  --ew-art-frame: url('/art/elegant-wedding/Floral-frame-mob.svg?c=58111a&d=d6b26a');
+  --ew-art-frame-web: url('/art/elegant-wedding/Floral-frame-web.svg?c=58111a&d=d6b26a');
+  --ew-art-posy: url('/art/elegant-wedding/lastsection-flowers.svg?c=58111a&d=d6b26a');
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #171013;
+  color: var(--ink);
+  font-family: 'Cormorant Garamond', ui-serif, Georgia, serif;
+}
+
+/* The ground the card sits on. Only ever seen on a screen wider than a phone,
+   where it reads as the surface an invitation has been laid on. */
+.ew-stage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  background:
+    radial-gradient(120% 80% at 50% 0%, #2a1c22 0%, #171013 70%);
+}
+
+.ew-card {
+  position: relative;
+  /* The card is only ever as wide as its own height allows.
+
+     The artwork is a fixed shape, so on a screen shorter than the one it was
+     drawn for something has to give. Narrowing the card is what gives: the
+     page still ends exactly where the screen ends, and because the card then
+     has the painting's own proportions, the painting fits it exactly -- no
+     crop at the top and bottom where the arch band and the peacock live, and
+     no gap at the sides to fill with anything.
+
+     What is beside it is the same dark ground the card already sits on when
+     it is opened on a laptop.
+
+     Two caps, and the smaller wins: never wider than the screen, and never
+     wider than the height can carry. On a phone taller than the artwork the
+     first one binds and the sides crop instead, which loses only border. */
+  width: min(100vw, calc(100svh * 780 / 1688));
+  min-height: 100vh;
+  min-height: 100svh;
+  /* `clip`, not `hidden`.
+
+     hidden on one axis computes the other to `auto`, which made the card its
+     own scroll container. The pages then snapped inside the card while the
+     document scrolled past it, so nothing appeared to snap at all. `clip`
+     trims the same overflow without creating a scroll container, leaving the
+     document the only thing scrolling and the snap points on it. */
+  overflow-x: clip;
+  background: var(--cream, #fdfbf7);
+  box-shadow: 0 0 80px -20px rgba(0, 0, 0, .8);
+}
+
+/* ---------------------------------------------------------- the envelope
+
+   Designed at 390 x 842, and laid out here as fractions of that box rather
+   than of the viewport. A phone is 375 or 393 or 430 wide and any height at
+   all; measuring against the screen means the wax lands on the seam on the
+   designer's phone and 40px off it on everyone else's.
+
+     body   390 x 553, pinned to the bottom
+     flap   390 x 465, pinned to the top
+     wax    188 square at x101 y326 — centred, and overlapping the point
+            rather than balanced on it
+*/
+
+/* The envelope is a lid over the invitation, not a page in front of it.
+
+   Fixed and on top, so the card is behind it from the first frame. Lifting
+   the flap uncovers something that was already there — which is the whole
+   point, and is why the card is no longer hidden and faded in. That version
+   was a swap: envelope, blank screen, then card.
+
+   svh rather than dvh: the small viewport height assumes the browser's own
+   chrome is showing. dvh grows as the address bar retracts, which makes the
+   envelope taller than the space it has. */
+.ew-gate {
+  /* Absolute inside the card column, not fixed to the viewport.
+
+     Fixed took it out of .ew-card entirely, so on a desktop it spanned the
+     whole window and scaled the envelope to something enormous. It only ever
+     needs to cover the first screenful of the card, and the page is locked
+     while it is sealed, so absolute behaves identically and stays inside the
+     390px column where it belongs. */
+  position: absolute;
+  inset: 0;
+  bottom: auto;
+  z-index: 20;
+  overflow: hidden;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 28px;
+}
+
+/* The 390 it was drawn at is a cap on a desktop, not on a phone.
+
+   Capping everywhere was worse on both counts on a large phone: a 430pt
+   screen got dark strips down the sides AND lost the edges of the painting,
+   because the height could carry 431 and the cap held it at 390.
+
+   It stays a cap on a desktop for a reason that is not about the card. The
+   type is sized in vw -- clamp(34px, 11.5vw, 48px) and friends -- so it
+   tracks the window rather than the card. On a wide window those clamps are
+   already pinned at their maximum, and a card grown past 390 would carry
+   names that never grew with it. */
+@media (min-width: 520px) {
+  .ew-card { max-width: var(--ew-w); }
+}
+
+/* The box everything is measured against, scaled to fill.
+
+   It keeps the designed 390:842 exactly and grows until it covers the
+   viewport, cropping at the sides on a screen that is proportionally taller.
+   Cropping rather than letterboxing keeps the paper edge-to-edge, and because
+   the box itself never changes shape, the wax stays on the seam no matter how
+   much of the sides is lost. */
+.ew-envelope {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Height fills; width follows from the ratio and is cropped by the gate.
+
+     Setting width:100% with min-height:100% instead let the box resolve
+     taller than the viewport and pushed the whole page down with it. Driving
+     from height is what "cover" actually means: one dimension fits exactly,
+     the other overflows and is clipped. */
+  height: 100%;
+  width: auto;
+  min-width: 100%;
+  aspect-ratio: 390 / 842;
+}
+
+/* 390 x 553, along the bottom edge. */
+.ew-env-body {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  height: calc(553 / 842 * 100%);
+  object-fit: fill;
+  display: block;
+  will-change: transform;
+}
+
+/* The pocket drops away as the flap lifts, and the card is what was inside.
+
+   It starts a moment after the flap rather than with it: paper cannot slide
+   out of an envelope that is still sealed, and the two moving together reads
+   as the picture coming apart rather than as something opening. */
+.is-opening .ew-env-body {
+  animation: ew-drop 1900ms cubic-bezier(.4, .05, .25, 1) 420ms forwards;
+}
+
+@keyframes ew-drop {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(105%); }
+}
+
+/* 390 x 465, along the top edge. The wrapper holds the perspective so it does
+   not rotate along with the flap it is describing. */
+.ew-flap-wrap {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: calc(465 / 842 * 100%);
+  perspective: 1400px;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.ew-flap {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  transform-origin: top center;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Twice as slow as it was, and eased so the lift is legible.
+
+   The flap is the whole trick of this design; at a second it was over before
+   a guest had registered that paper had moved. It breaks at the seal, travels
+   a touch past vertical, then settles — which is what a hinged flap does. */
+.is-opening .ew-flap {
+  animation: ew-open 2200ms cubic-bezier(.34, .82, .28, 1) forwards;
+}
+
+/* Positive rotation, so the flap tips *away* from the reader.
+
+   Negative swung the bottom edge toward the viewer: the flap loomed forward
+   over the card, growing under the perspective, which reads as the envelope
+   falling on you rather than opening. A real flap hinges back over its own
+   top edge, away and out of sight. */
+@keyframes ew-open {
+  0%   { transform: rotateX(0deg); }
+  12%  { transform: rotateX(6deg); }
+  60%  { transform: rotateX(120deg); }
+  85%  { transform: rotateX(172deg); }
+  100% { transform: rotateX(178deg); }
+}
+
+/* ------------------------------------------------------------- the seal */
+
+/* 188 square at x101 y326, as fractions of the 390 x 842 box. */
+.ew-seal-btn {
+  position: absolute;
+  left: calc(101 / 390 * 100%);
+  top: calc(326 / 842 * 100%);
+  width: calc(188 / 390 * 100%);
+  z-index: 3;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.ew-seal {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform .3s ease;
+}
+.ew-seal-btn:hover .ew-seal { transform: scale(1.04); }
+.ew-seal-btn:active .ew-seal { transform: scale(.98); }
+
+/* The wax breaks and lifts away with the flap it was holding. */
+.is-opening .ew-seal-btn {
+  animation: ew-seal-go 900ms cubic-bezier(.4, 0, .5, 1) forwards;
+  pointer-events: none;
+}
+@keyframes ew-seal-go {
+  0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+  35%  { opacity: 1; transform: translateY(-3%) scale(1.06) rotate(-3deg); }
+  100% { opacity: 0; transform: translateY(-22%) scale(1.14) rotate(-7deg); }
+}
+
+/* "Tap to Open" sits below the wax and breathes.
+
+   A still line of script on a still envelope gives a guest nothing to act on
+   — plenty of people have never opened a digital invitation and do not know
+   the seal is a button. Slow and small: an invitation to touch, not a demand
+   for attention. */
+.ew-tap {
+  position: absolute;
+  top: calc((326 + 188) / 842 * 100%);
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 14px;
+  z-index: 3;
+  white-space: nowrap;
+  font-family: 'Alex Brush', cursive;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--maroon, #58111a);
+  animation: ew-breathe 2600ms ease-in-out infinite;
+}
+
+@keyframes ew-breathe {
+  0%, 100% { opacity: .55; transform: translateX(-50%) scale(1); }
+  50%      { opacity: .95; transform: translateX(-50%) scale(1.045); }
+}
+
+.is-opening .ew-tap { animation: ew-tap-go 500ms ease forwards; }
+@keyframes ew-tap-go {
+  to { opacity: 0; transform: translateX(-50%) translateY(8px); }
+}
+
+/* The credit, at the foot of the envelope.
+
+   Set in the same script as the rest of the card — a sans-serif line of
+   attribution under hand-made paper reads as a badge stuck on afterwards. */
+.ew-credit {
+  position: relative;
+  z-index: 3;
+  /* The card's serif rather than its script. The script belongs to the
+     couple's own words; a line of attribution set in the same hand competes
+     with them for the same attention. */
+  font-family: 'Cormorant Garamond', ui-serif, Georgia, serif;
+  /* Given real size. It is the one line on the envelope that sells the next
+     card, and at 14px it read as the small print at the foot of a receipt. */
+  font-size: clamp(16px, 4.6vw, 19px);
+  letter-spacing: .06em;
+  line-height: 1;
+  color: var(--maroon-deep, #4a0e17);
+  opacity: .6;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+  transition: opacity .25s ease;
+}
+.ew-credit:hover { opacity: .9; }
+
+/* -------------------------------------------------------------- the card */
+
+/* Removed once the opening has finished, so a lid nobody can see is not
+   still sitting over the card swallowing taps and scrolls. */
+.ew-gate.is-open { display: none; }
+
+/* The card cannot be scrolled away from while it is still sealed. */
+/* Nothing moves while the envelope is shut.
+
+   overflow:hidden on the body alone did not do it: the root element is what
+   scrolls, so the page slid straight past the sealed envelope and showed the
+   invitation underneath it. The lock has to be on <html>, and the class is
+   put there as well as on the body for exactly this rule. */
+html.ew-sealed,
+body.ew-sealed { overflow: hidden; height: 100%; }
+
+/* No fade. The card is visible from the first frame and the envelope is what
+   is covering it. */
+/* A column, so the pages can be rearranged -- see the same note on .lw-main
+   in card-lavish-wedding.css. The pages are laid out by their `order`, which
+   the card sets from the arrangement the customer keeps. */
+.ew-main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ------------------------------------------------------------- the scene
+
+   The painted arch, and the couple's names over its clear lower third.
+
+   The artwork is 780 x 1688 — twice the 390 x 844 it is drawn at, so it holds
+   up on a retina phone. It fills the viewport the same way the envelope does,
+   cropping at the sides rather than letterboxing.
+*/
+.ew-scene {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* The drift.
+
+   Twenty per cent in and twenty per cent back out, over eighteen seconds. The
+   size of the movement was asked for; the length is what makes it bearable —
+   the same travel over four seconds is a zoom, and over eighteen it is
+   something you notice only if you look for it.
+
+   Scaled from the centre so nothing walks out of frame, and it is the
+   background that moves, never the names: type sliding under a reader's eye
+   while they are trying to read it is the difference between atmosphere and
+   seasickness. */
+.ew-scene-art {
+  position: absolute;
+  inset: 0;
+  /* The drawing, in the colour this card was bought in.
+
+     Each of these is a variable with the artwork's own colours behind it: a
+     card that never chose a colour is served the flat file, and one that did
+     gets the same drawing from /art with its maroons moved. The fallback is
+     the JPEG rather than the PNG -- same picture, a megabyte less of it,
+     which on a Pakistani mobile connection is the difference between the
+     cover being there and the cover arriving. */
+  background: var(--ew-art-cover, url('/img-sample/templates/elegant-wedding/Background-mob.svg.webp')) center / cover no-repeat;
+  transform-origin: center center;
+  animation: ew-drift 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes ew-drift {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.2); }
+}
+
+/* ---- petals ----
+
+   Rose petals drifting up through the arch behind the couple. The background
+   is already moving on its own slow zoom, and this only has to move at a
+   different speed in front of it, so the scene stops reading as a still
+   picture with an effect applied to it.
+
+   Maroon and dusty rose, not gold. The arch interior is cream marble and a
+   pale green garden, and a warm light at this size vanishes into it — the
+   colours that hold against this painting are the ones already in its own
+   roses. Shape matters for the same reason: a round dot on a dense
+   watercolour reads as a speck of dirt, a petal reads as a petal.
+
+   Kept inside the arch, above the balustrade, so nothing drifts over the
+   names or off the sides of a cropped card. */
+.ew-petals {
+  position: absolute;
+  top: calc(180 / 842 * 100%);
+  left: 14%;
+  right: 14%;
+  height: calc(420 / 842 * 100%);
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Each petal is a full-height *track*, and the petal itself is the ::before
+   sitting at the bottom of it.
+
+   That indirection is the whole trick. A percentage inside translate()
+   resolves against the element's own box, so animating a 12px petal by -100%
+   moves it twelve pixels — it never leaves the balustrade. Giving the
+   animated element the container's height makes the percentage mean a full
+   pass up the arch, and it stays correct when the card scales down on a
+   small phone.
+
+   It also separates the two motions: the track carries the petal up and
+   sways it, while the petal tumbles inside the track on its own timing. One
+   element cannot do both, because the second transform would simply replace
+   the first. */
+.ew-petals span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--s);
+  opacity: 0;
+  animation: ew-petal-rise 13s ease-in-out infinite;
+}
+
+.ew-petals span::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--s);
+  height: var(--s);
+  background: var(--c);
+  border-radius: 50% 12% 50% 12%;
+  /* The artwork it drifts over is dense in exactly these colours; without a
+     little separation a petal reads as part of a garland rather than as
+     something moving in front of one. */
+  box-shadow: 0 1px 3px rgba(60, 20, 28, .18);
+  animation: ew-petal-turn 7s linear infinite;
+}
+
+/* Each one starts somewhere else, at a different moment, at its own size and
+   its own pace. Six on identical timings is a machine; six offset is
+   weather. */
+.ew-petals span:nth-child(1) { left:  4%; --s: 13px; --c: rgba(88, 17, 26, .60);  animation-delay:  0s;   animation-duration: 13s; }
+.ew-petals span:nth-child(2) { left: 25%; --s: 10px; --c: rgba(168, 96, 110, .62); animation-delay: 2.6s;  animation-duration: 16s; }
+.ew-petals span:nth-child(3) { left: 47%; --s: 17px; --c: rgba(88, 17, 26, .48);  animation-delay: 5.1s;  animation-duration: 11s; }
+.ew-petals span:nth-child(4) { left: 66%; --s: 11px; --c: rgba(168, 96, 110, .65); animation-delay: 7.4s;  animation-duration: 15s; }
+.ew-petals span:nth-child(5) { left: 84%; --s: 14px; --c: rgba(88, 17, 26, .58);  animation-delay: 9.8s;  animation-duration: 12s; }
+.ew-petals span:nth-child(6) { left: 36%; --s:  9px; --c: rgba(168, 96, 110, .60); animation-delay: 11.6s; animation-duration: 17s; }
+
+/* The petals tumble at their own speeds, so two that happen to be side by
+   side are never turning in step. */
+.ew-petals span:nth-child(2)::before { animation-duration: 9s;  animation-direction: reverse; }
+.ew-petals span:nth-child(3)::before { animation-duration: 11s; }
+.ew-petals span:nth-child(4)::before { animation-duration: 6s;  animation-direction: reverse; }
+.ew-petals span:nth-child(5)::before { animation-duration: 8s; }
+.ew-petals span:nth-child(6)::before { animation-duration: 10s; animation-direction: reverse; }
+
+/* Up the arch with a slow sway, fading in near the balustrade and out under
+   the cusp, so nothing ever pops into or out of existence mid-air. */
+@keyframes ew-petal-rise {
+  0%   { opacity: 0;   transform: translate(0,     6%); }
+  15%  { opacity: 1; }
+  50%  {               transform: translate(13px, -50%); }
+  76%  { opacity: .85; }
+  100% { opacity: 0;   transform: translate(-9px, -106%); }
+}
+
+@keyframes ew-petal-turn {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* --------------------------------------------------------- the welcome
+
+   The painted frame, and the invitation's first words laid into the clear
+   middle of it.
+*/
+.ew-welcome {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  background: #f7f4ee;
+}
+
+.ew-frame-art {
+  position: absolute;
+  inset: 0;
+  background: var(--ew-art-frame, url('/img-sample/templates/elegant-wedding/Floral-frame-mob.svg.webp')) center / cover no-repeat;
+}
+
+/* ---- the leaves ----
+
+   The foliage is painted into a flat PNG, so there are no leaves to animate.
+   Drawing new ones on top was the obvious move and the wrong one: anything
+   hand-made sits next to this watercolour looking hand-made.
+
+   So the artwork moves itself. These two layers are the same image again,
+   each clipped to one bottom corner and rocked a fraction of a degree about a
+   point at its base — the painted leaves are the leaves that move. Two clumps
+   on different timings rather than one block, because foliage rooted in two
+   places does not sway as a single sheet.
+
+   Two details make it seamless. The clip line sits at 60%, which on this
+   artwork is empty cream, so the moving copy meets the still one where there
+   is no detail to misalign. And each layer is scaled slightly past its own
+   edges, because rotating about a point at the bottom swings the top corners
+   sideways by a couple of pixels and would otherwise open a sliver at the
+   margin. */
+.ew-frame-flora {
+  position: absolute;
+  inset: 0;
+  background: var(--ew-art-frame, url('/img-sample/templates/elegant-wedding/Floral-frame-mob.svg.webp')) center / cover no-repeat;
+  will-change: transform;
+}
+
+.ew-frame-flora.is-left {
+  clip-path: inset(60% 50% 0 0);
+  transform-origin: 22% 100%;
+  animation: ew-sway-left 9s ease-in-out infinite;
+}
+
+.ew-frame-flora.is-right {
+  clip-path: inset(60% 0 0 50%);
+  transform-origin: 78% 100%;
+  animation: ew-sway-right 11.5s ease-in-out infinite;
+}
+
+@keyframes ew-sway-left {
+  0%, 100% { transform: scale(1.05) rotate(-0.55deg); }
+  50%      { transform: scale(1.05) rotate(0.55deg); }
+}
+
+@keyframes ew-sway-right {
+  0%, 100% { transform: scale(1.05) rotate(0.5deg); }
+  50%      { transform: scale(1.05) rotate(-0.5deg); }
+}
+
+/* ---- the words ----
+
+   Laid into the clear middle of the frame and centred as a block, rather than
+   each line pinned to a coordinate. These are the lines a customer is most
+   likely to make longer than the ones that ship, and a block that grows from
+   its centre stays inside the arch when they do. */
+.ew-welcome-text {
+  position: absolute;
+  top: calc(186 / 842 * 100%);
+  bottom: calc(142 / 842 * 100%);
+  left: calc(52 / 390 * 100%);
+  right: calc(52 / 390 * 100%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  text-align: center;
+}
+
+.ew-blessing,
+.ew-welcome-msg {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(17px, 5.2vw, 21px);
+  line-height: 1.5;
+  color: #6f6a67;
+  /* The customer's own line breaks are kept, so they choose where it wraps
+     instead of the width of whatever phone it is opened on choosing. */
+  white-space: pre-line;
+}
+
+.ew-eyebrow {
+  margin: calc(34 / 842 * 100%) 0 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(12px, 3.6vw, 14px);
+  font-weight: 600;
+  letter-spacing: .34em;
+  /* Spaced capitals always sit one space right of centre — the tracking is
+     added after the last letter too. Pulling half of it back re-centres. */
+  text-indent: .34em;
+  text-transform: uppercase;
+  color: var(--gold-deep, #c8952f);
+}
+
+.ew-welcome-msg { margin-top: calc(26 / 842 * 100%); }
+
+.ew-heart {
+  width: clamp(19px, 5.8vw, 24px);
+  height: auto;
+  margin-top: calc(30 / 842 * 100%);
+  fill: var(--maroon, #d3212e);
+  animation: ew-beat 2.4s ease-in-out infinite;
+}
+
+/* Barely there. A heart on a wedding invitation that pulses hard reads as a
+   web page; one that moves the way a held breath does reads as paper. */
+@keyframes ew-beat {
+  0%, 100%  { transform: scale(1); }
+  14%       { transform: scale(1.13); }
+  28%       { transform: scale(1); }
+  42%       { transform: scale(1.08); }
+  56%       { transform: scale(1); }
+}
+
+.ew-welcome-name {
+  margin: 0;
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-size: clamp(44px, 14.5vw, 60px);
+  line-height: 1.04;
+  color: var(--maroon, #58111a);
+}
+
+.ew-welcome-text .ew-welcome-name:first-of-type { margin-top: calc(30 / 842 * 100%); }
+
+.ew-amp {
+  margin: calc(-6 / 842 * 100%) 0;
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-size: clamp(26px, 8vw, 34px);
+  line-height: 1;
+  color: var(--maroon-pale, #c9a3ab);
+}
+
+/* ------------------------------------------------------------- headings
+
+   One heading for every page that has one -- families, programme, questions.
+   Wide-tracked and set small against a lot of space, which is what makes the
+   pages read as one document rather than a run of separate posters. */
+.ew-h2 {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(24px, 7.4vw, 31px);
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-align: center;
+  color: var(--maroon, #8a3a2c);
+}
+
+.ew-h2-sm {
+  font-size: clamp(15px, 4.4vw, 18px);
+  letter-spacing: .3em;
+  text-indent: .3em;
+  color: var(--gold-deep, #d08a3e);
+}
+
+/* The dashed rule the artwork uses, redrawn for the pages that have no
+   painting of their own, so they still belong to the same set. */
+.ew-rule {
+  width: calc(320 / 390 * 100%);
+  height: 1px;
+  margin: calc(18 / 844 * 100%) 0 calc(20 / 844 * 100%);
+  background-image: linear-gradient(90deg, #b9ada6 0 6px, transparent 6px 12px);
+  background-size: 12px 1px;
+}
+
+/* Pages whose content is a list rather than a fixed composition. They still
+   fill exactly one screen; the list inside scrolls if a customer adds more
+   than fits, so the page never grows and never breaks the snapping. */
+.ew-portraits,
+.ew-families,
+.ew-programme,
+.ew-event,
+.ew-faqs,
+.ew-closing {
+  position: relative;
+  height: 100svh;
+  /* The padding is inside the screenful, not added to it. Without this each
+     of these pages came out 893 tall against an 844 screen and stopped being
+     a snap point that fits. */
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(42 / 844 * 100%) calc(24 / 390 * 100%) calc(64 / 844 * 100%);
+  /* The foot of the page belongs to the "Scroll down" cue, which is fixed to
+     the window and sits over the last 56px of it. Content that reaches down
+     there is content the cue is lying on -- the map and calendar buttons on
+     a function page were the first thing to go. A percentage padding is a
+     share of the page's WIDTH, so on a phone that was 28px, less than the
+     cue; this is the cue's room in pixels, whichever is larger. */
+  padding-bottom: max(calc(64 / 844 * 100%), calc(env(safe-area-inset-bottom, 0px) + 60px));
+  background: #faf7f1;
+}
+
+/* Nothing scrolls inside a page.
+
+   These lists used to. Two scrollbars on one screen fight each other -- a
+   drag that was meant to turn the page scrolls the list instead, and the card
+   feels stuck -- so the lists fit the screen instead of scrolling within it.
+
+   They fit by shrinking. Every measurement on these three pages is set in
+   svh, so the type and the spacing follow the height of the screen rather
+   than sitting at a fixed size and running off the bottom of a short one. */
+.ew-fam-scroll,
+.ew-prog-scroll,
+.ew-faq-scroll {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: .62svh;
+  overflow: hidden;
+  padding-bottom: 3.4svh;
+}
+
+/* Shrunk to fit, when it has to be.
+
+   svh only shrinks what is measured in svh, and these pages are mostly
+   measured in things that have a floor -- a 13px name, a 10px torn border, a
+   photograph -- so on a short phone the list came out taller than the room
+   the page leaves it and its last rows were cut off by the edge (and, before
+   the cue had a room of its own, sat under it). The script by ewFit in the
+   view measures the list and, only if it does not fit, sets --ew-fit below 1;
+   everything in the list is zoomed by it, which shrinks its layout as well as
+   its look. On a screen where it fits nothing changes. */
+.ew-fam-scroll > *,
+.ew-prog-scroll > *,
+.ew-faq-scroll > * { zoom: var(--ew-fit, 1); }
+
+/* ----------------------------------------------------------- portraits */
+.ew-portraits { justify-content: center; gap: calc(10 / 844 * 100%); }
+
+.ew-portrait { margin: 0; display: flex; flex-direction: column; align-items: center; }
+
+/* The torn frame is the painting; the photograph sits inside its edge. */
+.ew-portrait-frame {
+  position: relative;
+  width: calc(196 / 390 * 100%);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+/* The torn frame, on a layer of its own.
+
+   It is still a bitmap, so it follows the card by being turned rather than
+   tinted -- and a turn applies to everything the element paints. Behind the
+   photograph rather than on the frame itself, or a guest's own picture would
+   come out the colour of the card. */
+.ew-portrait-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* The card behind a portrait, in the customer's colour exactly.
+
+     It was the painted PNG under a hue-rotate, and a hue-rotate is a linear
+     approximation that lands near a colour rather than on it -- and it turns
+     the whole element, so the words on top travelled with the paint. The file
+     is a single maroon at 352 degrees with soft edges, which is a shape rather
+     than a picture: used as a mask over the palette colour it is exactly the
+     colour that was picked, and nothing else on the element moves. */
+  background-color: var(--maroon, #58111a);
+  -webkit-mask: url('/img-sample/templates/elegant-wedding/Couple portrait background.png.webp') center / 100% 100% no-repeat;
+  mask: url('/img-sample/templates/elegant-wedding/Couple portrait background.png.webp') center / 100% 100% no-repeat;
+}
+
+.ew-portrait-frame > * { position: relative; }
+
+.ew-portrait-img,
+.ew-portrait-empty {
+  width: 92%;
+  height: 92%;
+  object-fit: cover;
+  background: #efe7df;
+}
+
+.ew-portrait-name {
+  margin: calc(10 / 844 * 100%) 0 0;
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-size: clamp(24px, 7.4vw, 30px);
+  color: var(--maroon, #58111a);
+}
+
+.ew-posy {
+  width: calc(104 / 390 * 100%);
+  aspect-ratio: 1;
+  margin: calc(4 / 844 * 100%) 0;
+  background: url('/img-sample/templates/elegant-wedding/Couple portrait flower.png.webp') center / contain no-repeat;
+  /* No hue-rotate. This one is a painted posy in half a dozen colours, not a
+     shape in one: turning it lands every petal somewhere approximate, and
+     masking it would flatten the lot to a single colour. A flower on a card
+     may be the colour it was painted. */
+  /* The posy is supplied on white rather than on transparency, which on this
+     cream page reads as a pale square sitting behind the flowers. Multiply
+     drops white to nothing and leaves the paint, which is what the file would
+     have done had it been cut out. */
+  mix-blend-mode: multiply;
+}
+
+/* ------------------------------------------------------------ families */
+.ew-fam-side + .ew-fam-side { margin-top: 2.2svh; }
+
+.ew-fam-label {
+  margin: 0 0 .5em;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(11px, 1.75svh, 16px);
+  text-align: center;
+  color: var(--gold-deep, #d08a3e);
+}
+
+.ew-fam-figure {
+  width: min(calc(96 / 390 * 100%), 12svh);
+  margin: 0 auto .45em;
+  aspect-ratio: 3 / 4;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+/* The grey card is a mount for a photograph. A drawing is not a photograph:
+   it is cut out, and a rectangle of grey behind it reads as a picture that
+   failed to load rather than as a frame. Only where there is a photograph. */
+.ew-fam-figure:has(.ew-fam-photo) { background: #e6e1dc; }
+
+@supports not selector(:has(img)) {
+  .ew-fam-figure { background: #e6e1dc; }
+}
+
+/* A photograph fills its mount and is cropped to it. A drawing is shown
+   whole -- cropped to a 3:4 box the groom loses his shoulders. */
+.ew-fam-figure .ew-fam-photo { width: 100%; height: 100%; object-fit: cover; }
+.ew-fam-figure .ew-fam-art { width: 100%; height: 100%; object-fit: contain; }
+
+/* The line is always in the markup, so a name typed in the editor has
+   somewhere to appear without waiting for a save. Empty, it takes no room --
+   and :empty stops applying the moment a letter arrives, so it appears as it
+   is typed. */
+.ew-fam-parents:empty { display: none; }
+
+.ew-fam-parents {
+  margin: 0 0 .55em;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(14px, 2.3svh, 20px);
+  text-align: center;
+  color: #3a2b27;
+}
+
+/* A contact a guest can ring. Marked Prominent in the panel, it is printed on
+   the red card; everyone else on the grey one. Same distinction every other
+   design makes, in this one's materials. */
+.ew-fam-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6em;
+  margin-bottom: .85svh;
+  padding: .38em .7em;
+  box-sizing: border-box;
+  border-image: url('/img-sample/templates/elegant-wedding/Famililes background grey.png.webp') 40 fill round;
+  border-image-width: 10px;
+  /* Longhands, never the `border` shorthand: it resets border-image to
+     its initial value and takes the artwork off with it. */
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent;
+  color: #3a2b27;
+}
+
+.ew-fam-row.is-prominent {
+  border-image-source: url('/img-sample/templates/elegant-wedding/Families Background red.png.webp');
+  color: var(--cream, #f6ece6);
+}
+
+/* The band behind a prominent contact, in the customer's colour exactly.
+
+   It was the painted band under a hue-rotate. A hue-rotate is a linear
+   approximation of a hue turn, so it lands near a colour rather than on it,
+   and it applies to the element's contents as well -- the name and the number
+   printed on the band travelled with the paint.
+
+   The file is one maroon at 352 degrees with soft edges: a shape, not a
+   picture. Used as a mask border over the palette colour it keeps the
+   nine-slice corners it was drawn with, and the fill is exactly the colour
+   that was picked. Gated, so a browser without mask-border keeps the painted
+   band rather than a bare rectangle. */
+@supports ((-webkit-mask-box-image: url("")) or (mask-border-source: url(""))) {
+  .ew-fam-row.is-prominent {
+    border-image-source: none;
+    background-color: var(--maroon, #58111a);
+    -webkit-mask-box-image: url('/img-sample/templates/elegant-wedding/Families Background red.png.webp') 34 fill round;
+    mask-border: url('/img-sample/templates/elegant-wedding/Families Background red.png.webp') 34 fill round;
+  }
+}
+
+.ew-fam-name {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(13px, 2svh, 18px);
+}
+
+.ew-fam-phone {
+  flex: 0 0 auto;
+  padding: .3em .8em;
+  border-radius: 999px;
+  background: #fdfbf7;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(11px, 1.65svh, 14px);
+  font-variant-numeric: tabular-nums;
+  color: #3a2b27;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------- programme */
+.ew-prog-card {
+  margin-bottom: 0;
+  padding: .3em .8em;
+  box-sizing: border-box;
+  border-image: url('/img-sample/templates/elegant-wedding/Programme background.png.webp') 30 fill round;
+  border-image-width: 12px;
+  /* Longhands, never the `border` shorthand: it resets border-image to
+     its initial value and takes the artwork off with it. */
+  border-width: 12px;
+  border-style: solid;
+  border-color: transparent;
+  text-align: center;
+}
+
+.ew-prog-name {
+  margin: 0;
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-size: clamp(15px, 3.1svh, 32px);
+  color: var(--maroon, #58111a);
+}
+
+.ew-prog-date {
+  margin: .05em 0 .15em;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(10.5px, 1.95svh, 17px);
+  color: var(--gold-deep, #d08a3e);
+}
+
+.ew-prog-where {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(11px, 1.75svh, 16px);
+  color: #6f6a67;
+}
+
+/* -------------------------------------------------------- event pages
+
+   Dark, and framed.
+
+   These were cream like the pages around them, and with one per event -- five
+   pages in a row built to the same plan -- they read as the same page shown
+   five times. The events are the part of an invitation a guest actually needs,
+   so they get the one treatment nothing else on the card uses: deep maroon
+   with a gold rule around it.
+
+   Repetition is the point here rather than a problem. A guest scrolling past
+   five of these should recognise on sight that each is an event; what changes
+   between them is the drawing, the name and the details. */
+.ew-event {
+  justify-content: center;
+  text-align: center;
+  background:
+    radial-gradient(128% 84% at 50% 0%, var(--maroon, #6d1725) 0%, var(--maroon-deep, #3d0b13) 100%);
+  color: var(--cream, #f3e4d4);
+}
+
+/* Two rules and four points of gold. Drawn rather than an image so it is
+   crisp at any size and costs nothing to load, and inset in svh so the frame
+   keeps its proportion to the page on a short screen. */
+.ew-event::before,
+.ew-event::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.ew-event::before {
+  inset: 1.7svh;
+  border: 1px solid rgba(214, 178, 106, .5);
+}
+
+.ew-event::after {
+  inset: 2.6svh;
+  border: 1px solid rgba(214, 178, 106, .24);
+  /* A small gold point at each corner of the inner rule, which is what stops
+     the frame reading as a plain box. */
+  background-image:
+    radial-gradient(circle, var(--gold, #d6b26a) 0 2.4px, transparent 2.4px),
+    radial-gradient(circle, var(--gold, #d6b26a) 0 2.4px, transparent 2.4px),
+    radial-gradient(circle, var(--gold, #d6b26a) 0 2.4px, transparent 2.4px),
+    radial-gradient(circle, var(--gold, #d6b26a) 0 2.4px, transparent 2.4px);
+  background-repeat: no-repeat;
+  background-position: 0 0, 100% 0, 0 100%, 100% 100%;
+}
+
+/* Everything the page prints sits above the frame. */
+.ew-event > * { position: relative; z-index: 1; }
+
+/* A leaf of pale paper with a gold rule, not the torn maroon frame the
+   portraits use. That frame is maroon, and on this maroon page it stopped
+   being a frame and became a dark smudge round the drawing. Gold on deep red
+   is the only edge that reads here. */
+/* A mount for a photograph, and nothing at all for a drawing.
+
+   The paper square and its gold rule are a mount: they are what a photograph
+   is pinned to. The drawings are cut out with transparency around them and
+   were being pinned to the same square, so every function page had a pale
+   box sitting on the cream with an illustration floating in the middle of
+   it -- a background that only existed because the photograph case needed
+   one.
+
+   The colours follow the card rather than being written down: the mount was
+   a fixed cream and a fixed gold, so on a card turned green it stayed the
+   colours the design was drawn in. */
+.ew-event-frame {
+  position: relative;
+  width: min(calc(172 / 390 * 100%), 24svh);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+/* Only where there is a photograph to mount. */
+.ew-event-frame:has(.ew-event-img) {
+  background: var(--cream, #f6efe7);
+  border: 1px solid color-mix(in srgb, var(--gold, #d6b26a) 75%, transparent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--gold, #d6b26a) 13%, transparent);
+}
+
+/* A browser without :has() keeps the mount everywhere rather than losing it
+   everywhere -- the old behaviour, which is the safe way round. */
+@supports not selector(:has(img)) {
+  .ew-event-frame {
+    background: var(--cream, #f6efe7);
+    border: 1px solid color-mix(in srgb, var(--gold, #d6b26a) 75%, transparent);
+  }
+}
+
+.ew-event-img,
+.ew-event-art { position: relative; z-index: 1; }
+
+.ew-event-img { width: 100%; height: 100%; object-fit: cover; }
+/* Nothing frames a drawing any more, so it may fill the space it was
+   given rather than sitting inset inside a mount. */
+.ew-event-art { width: 100%; height: 100%; }
+
+.ew-event-flourish { margin: 1.4svh 0 0; color: var(--gold, #d6b26a); font-size: 15px; }
+
+.ew-event-title {
+  margin: .05em 0 0;
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-size: clamp(36px, 6.4svh, 54px);
+  color: #fbf1e4;
+}
+
+/* Gold on maroon, the way the reference badges it -- the one thing on the
+   page a guest looks for first. */
+.ew-event-guests {
+  margin: .4em 0 .7em;
+  padding: .32em 1.2em;
+  border-radius: 999px;
+  background: linear-gradient(var(--gold-light, #e0be7c), var(--gold, #cba55f));
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(13px, 1.95svh, 17px);
+  color: var(--maroon-deep, #4d0f18);
+}
+
+.ew-event-date {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(16px, 2.5svh, 22px);
+  color: #fbf1e4;
+}
+
+.ew-event-time,
+.ew-event-venue,
+.ew-event-address {
+  margin: .12em 0 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(13px, 2svh, 18px);
+  color: #d9c3ae;
+}
+
+.ew-event-venue { color: var(--gold-light, #e0be7c); }
+
+.ew-event-actions {
+  margin-top: 2.2svh;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ew-btn {
+  /* This is worn by a <button> as well as an <a> now (Add to Calendar has no
+     page to link to). A browser gives a <button> a background, a border and
+     Arial before this rule ever runs, and none of that is inherited the way
+     it is on an <a> -- explicit or it shows through underneath. */
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  cursor: pointer;
+  padding: .6em 1.25em;
+  border: 1px solid rgba(214, 178, 106, .6);
+  border-radius: 999px;
+  background: transparent;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(11px, 1.7svh, 15px);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--gold-light, #e6cb92);
+  transition: background .2s ease, color .2s ease;
+}
+
+.ew-btn:hover,
+.ew-btn:focus-visible { background: var(--gold-light, #e0be7c); color: var(--maroon-deep, #4d0f18); }
+
+/* ---------------------------------------------------------- questions */
+.ew-faq {
+  padding: .7svh 0;
+  border-bottom: 1px dashed #cfc5be;
+}
+
+.ew-faq:last-child { border-bottom: 0; }
+
+.ew-faq-q {
+  margin: 0 0 .15em;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(13px, 2.1svh, 19px);
+  color: #3a2b27;
+}
+
+.ew-faq-a {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(12px, 1.9svh, 17px);
+  line-height: 1.45;
+  color: #6f6a67;
+  white-space: pre-line;
+}
+
+/* ------------------------------------------------------------- closing */
+.ew-closing { justify-content: center; padding: 0; }
+
+.ew-closing-art {
+  position: absolute;
+  inset: 0;
+  background: var(--ew-art-frame, url('/img-sample/templates/elegant-wedding/Floral-frame-mob.svg.webp')) center / cover no-repeat;
+}
+
+/* The posy over the farewell.
+
+   Above the words rather than behind them, and sized against the card's own
+   width so it holds its proportion from a phone up to the centred column on a
+   desktop. It recolours with everything else -- the berries are the deepest
+   maroon in the whole design, so a card in emerald that kept them would look
+   like the last page belonged to a different invitation. */
+.ew-closing-posy {
+  position: absolute;
+  left: 50%;
+  top: calc(96 / 844 * 100%);
+  width: calc(196 / 390 * 100%);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  background: var(--ew-art-posy, url('/img-sample/templates/elegant-wedding/lastsection-flowers.svg.webp')) center / contain no-repeat;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ew-closing-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 calc(52 / 390 * 100%);
+}
+
+.ew-heart-closing { width: clamp(19px, 5.8vw, 24px); height: auto; fill: var(--maroon, #d3212e); }
+
+.ew-closing-note {
+  margin: calc(16 / 844 * 100%) 0 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(17px, 5.2vw, 21px);
+  line-height: 1.5;
+  color: #6f6a67;
+}
+
+.ew-closing-names {
+  margin: calc(10 / 844 * 100%) 0 calc(26 / 844 * 100%);
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-size: clamp(44px, 14.5vw, 60px);
+  line-height: 1.06;
+  color: var(--maroon, #58111a);
+}
+
+/* The credit: one small line at the foot of the last page, just above where
+   the "Scroll down" button sits on every other page (12px from the bottom,
+   about 30px tall). Ahmad, 2026-10-08: it was too big under the names. */
+.ew-made-big {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 50px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(12px, 3.3vw, 13.5px);
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-shadow: 0 0 6px rgba(253, 250, 246, .95), 0 0 2px rgba(253, 250, 246, .9);
+  color: var(--maroon, #58111a);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(88, 17, 26, .4);
+  padding-bottom: 2px;
+}
+
+/* ---------------------------------------------------------- scroll snap
+
+   One scroll, one page. The invitation is a stack of paintings and each one
+   is meant to be looked at whole, so the scroll settles on a page rather than
+   leaving the reader halfway between two of them.
+
+   `always` is the half-scroll part of it: without it a quick flick can carry
+   past a page entirely, and with it every gesture -- however small or however
+   hard -- lands on exactly the next one. */
+html {
+  scroll-snap-type: y mandatory;
+}
+
+.ew-card [data-section] {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* -------------------------------------------------------------- the guests
+
+   One painting: a cream ground, a dashed rule near the top and another near
+   the foot, and a torn maroon card between them. The type is laid into the
+   spaces it already leaves rather than drawn over it -- names above the first
+   rule, greeting between rule and card, the note on the card, events below
+   the second rule. */
+.ew-guests {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  background: #f7f4ee;
+}
+
+.ew-guests-scene { display: contents; }
+
+.ew-guests-art {
+  position: absolute;
+  inset: 0;
+  background: var(--ew-art-guests, url('/img-sample/templates/elegant-wedding/Dear-guest-mob.svg.webp')) center / cover no-repeat;
+}
+
+.ew-guests-names,
+.ew-guests-title,
+.ew-guests-msg,
+.ew-chips { position: absolute; z-index: 2; margin: 0; }
+
+.ew-guests-names {
+  top: calc(30 / 844 * 100%);
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .38em;
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-size: clamp(26px, 8.2vw, 34px);
+  color: var(--maroon, #58111a);
+}
+
+.ew-heart-inline {
+  width: .52em;
+  height: auto;
+  fill: var(--maroon, #d3212e);
+  animation: ew-beat 2.4s ease-in-out infinite;
+}
+
+.ew-guests-title {
+  top: calc(112 / 844 * 100%);
+  left: 0;
+  right: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(30px, 9.4vw, 39px);
+  text-align: center;
+  color: #2f2320;
+}
+
+/* On the card, not on the page: the painting puts it a few pixels left of
+   centre, so this is measured to the card rather than to the sheet. */
+.ew-guests-msg {
+  /* Spans the card and centres inside it, rather than starting at a fixed
+     height. The note that ships is three lines and a customer's may be ten;
+     anchored to the top, a short one leaves the card looking half-empty. */
+  top: calc(250 / 844 * 100%);
+  height: calc(340 / 844 * 100%);
+  left: calc(74 / 390 * 100%);
+  right: calc(82 / 390 * 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(16px, 4.8vw, 19px);
+  line-height: 1.55;
+  text-align: center;
+  color: var(--cream, #f6ece6);
+  white-space: pre-line;
+}
+
+/* Below the painting's lower rule, in the strip it leaves clear. There is
+   room for two rows there and no more, so the chips are sized to fit three
+   across rather than left to wrap into a third row and run under the scroll
+   cue. */
+.ew-chips {
+  /* Where the painting's lower rule is -- or, on a short phone, the highest
+     that leaves two rows of chips clear of the "Scroll down" cue at the foot
+     (two rows and the gap between them, and the cue's room). Nothing moves on
+     a phone as tall as the one this was drawn for. */
+  top: min(calc(680 / 844 * 100%), calc(100% - 152px));
+  left: calc(18 / 390 * 100%);
+  right: calc(18 / 390 * 100%);
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 8px;
+}
+
+/* Each chip is the torn card it is printed on, so the width follows the
+   longest name and the artwork stretches with it rather than the name being
+   cut to fit a fixed box. */
+.ew-chip {
+  /* Exactly three to a row, so five events read three-and-two rather than
+     however many happen to fit. Left to wrap on their own they came out two
+     to a row, which needed three rows, and the third ran under the scroll
+     cue. Equal widths also stop a short name and a long one sitting side by
+     side at different sizes. */
+  flex: 0 0 calc((100% - 16px) / 3);
+  /* Without this the 8px border and the padding are added outside the flex
+     basis, the chips come out a third wider than the basis says, and only two
+     fit the row the basis was sized for. */
+  box-sizing: border-box;
+  padding: .32em .55em;
+  border-image: url('/img/templates/elegant-wedding/Small%20card%20background.png') 34 fill round;
+  border-image-width: 8px;
+  border-width: 8px;
+  border-style: solid;
+  border-color: transparent;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(14px, 4.1vw, 17px);
+  text-align: center;
+  color: var(--maroon, #58111a);
+}
+
+/* ------------------------------------------------------------ the countdown
+
+   Plain cream, so the numbers are the only thing on the page. */
+.ew-countdown {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  background: #faf7f1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10 / 844 * 100%);
+}
+
+.ew-count-title {
+  margin: 0;
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-size: clamp(38px, 12vw, 50px);
+  color: var(--maroon, #58111a);
+}
+
+.ew-count-sub {
+  margin: 0 0 calc(22 / 844 * 100%);
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-size: clamp(22px, 6.8vw, 28px);
+  color: #8d5a63;
+}
+
+.ew-count-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(14 / 390 * 100%);
+  width: calc(300 / 390 * 100%);
+}
+
+.ew-count-cell {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: .38em;
+  padding: .72em .4em;
+  border-image: url('/img/templates/elegant-wedding/Countdown%20cards%20background.png') 34 fill round;
+  border-image-width: 12px;
+  border-width: 12px;
+  border-style: solid;
+  border-color: transparent;
+  color: var(--cream, #f6ece6);
+}
+
+/* The countdown card, in the customer's colour exactly -- same file, same
+   reasoning as the band above. */
+@supports ((-webkit-mask-box-image: url("")) or (mask-border-source: url(""))) {
+  .ew-count-cell {
+    border-image-source: none;
+    background-color: var(--maroon, #58111a);
+    -webkit-mask-box-image: url('/img/templates/elegant-wedding/Countdown%20cards%20background.png') 34 fill round;
+    mask-border: url('/img/templates/elegant-wedding/Countdown%20cards%20background.png') 34 fill round;
+  }
+}
+
+.ew-count-num {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(21px, 6.4vw, 26px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ew-count-label {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(14px, 4.2vw, 17px);
+  opacity: .82;
+}
+
+/* Every cell that changes gives a small kick, so the seconds tick visibly and
+   the rarer units announce themselves when their turn comes. Applied by the
+   script and removed when it finishes, so it can fire again. */
+.ew-count-cell.is-tick .ew-count-num {
+  animation: ew-tick .45s ease-out;
+}
+
+@keyframes ew-tick {
+  0%   { transform: translateY(-.16em); opacity: 0; }
+  55%  { opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* ------------------------------------------------------------ scroll cue
+
+   Every page fills the screen exactly, so nothing peeks over the fold to
+   suggest there is more below. This says so.
+
+   Low contrast on purpose: it is an instruction on someone's wedding
+   invitation, and it should be findable without being part of the design. */
+.ew-scroll {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(20 / 842 * 100%);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  pointer-events: none;
+  transition: opacity .5s ease;
+}
+
+.ew-scroll-label {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .24em;
+  text-indent: .24em;
+  text-transform: uppercase;
+  color: rgba(88, 17, 26, .58);
+}
+
+/* Two borders on a square, turned 45 degrees — a chevron with no image and
+   no glyph, so it never falls back to a different arrow on a phone without
+   the font. */
+.ew-scroll-arrow {
+  width: 10px;
+  height: 10px;
+  border-right: 1.6px solid rgba(88, 17, 26, .5);
+  border-bottom: 1.6px solid rgba(88, 17, 26, .5);
+  animation: ew-scroll-nudge 1.9s ease-in-out infinite;
+}
+
+@keyframes ew-scroll-nudge {
+  0%, 100% { transform: translateY(-3px) rotate(45deg); opacity: .3; }
+  50%      { transform: translateY(4px)  rotate(45deg); opacity: 1; }
+}
+
+/* On a short screen the cue gets close to the couple's names, which are
+   pinned at the height the design specifies and do not move. So the cue
+   gives way instead: same thing, less of it. */
+@media (max-height: 700px) {
+  .ew-scroll { bottom: calc(10 / 842 * 100%); gap: 4px; }
+  .ew-scroll-label { font-size: 10px; letter-spacing: .2em; text-indent: .2em; }
+  .ew-scroll-arrow { width: 8px; height: 8px; }
+}
+
+/* On the maroon event pages the cue would otherwise be maroon on maroon. */
+.ew-event .ew-scroll-label { color: rgba(232, 209, 174, .72); }
+.ew-event .ew-scroll-arrow { border-color: rgba(232, 209, 174, .6); }
+
+/* Nothing to scroll to while the envelope is still shut. */
+body.ew-sealed .ew-scroll { opacity: 0; }
+
+/* ---- the names ---- */
+
+/* The couple, at y200 in the 390 x 842 design space.
+
+   Measured against the scene's own box for the same reason the wax was: a
+   percentage of the viewport puts it where it belongs on one phone and
+   somewhere else on the next. */
+.ew-couple {
+  position: absolute;
+  top: calc(200 / 842 * 100%);
+  left: 50%;
+  transform: translateX(-50%);
+  /* 70% of the 230 it was drawn at. The arch behind it is the composition;
+     the couple standing in it should read as figures in a garden rather than
+     as the subject filling the frame. */
+  width: calc(230 * 0.7 / 390 * 100%);
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.ew-couple-art {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+/* A drawn illustration takes the card's colours; a painted one is a picture
+   and needs no fill. Both are sized by the box above. */
+.ew-couple-art:not(.is-painted) {
+  fill: currentColor;
+  color: var(--maroon, #58111a);
+}
+
+/* The names, from x88 y634. The block is symmetric about the centre, so 88 on
+   the left is 88 on the right and the text centres inside what is left. */
+/* Clear of the "Scroll down" cue.
+
+   On the 842-tall screen this was drawn for, the names end well above it. On a
+   shorter phone the same block, which is placed as a fraction of the height
+   but is as tall in pixels as its type, comes down onto the cue -- so the top
+   is the drawn position or, if that would put the foot of the block within the
+   cue's height of the bottom, the highest position that does not. Nothing
+   moves on a tall screen. The block is two names and "weds": twice the name
+   size, once the small word, and a little for the gaps between them. */
+.ew-scene-names {
+  --ew-name-fs: clamp(34px, 11.5vw, 48px);
+  --ew-weds-fs: clamp(14px, 4.4vw, 18px);
+  --ew-cue-room: 64px;
+  --ew-names-h: calc(2 * var(--ew-name-fs) * 1.02 + var(--ew-weds-fs) * 1.4 + 8px);
+  position: absolute;
+  top: min(calc(634 / 842 * 100%), calc(100% - var(--ew-cue-room) - var(--ew-names-h)));
+  left: calc(88 / 390 * 100%);
+  right: calc(88 / 390 * 100%);
+  z-index: 2;
+  text-align: center;
+  color: var(--maroon-deep, #4a0e17);
+}
+
+.ew-name {
+  margin: 0;
+  font-family: 'Alex Brush', cursive;
+  /* Scales with the card rather than the viewport height, so a long name
+     breaks the same way on every phone. */
+  font-size: var(--ew-name-fs, clamp(34px, 11.5vw, 48px));
+  line-height: 1.02;
+}
+
+.ew-weds {
+  margin: 2px 0;
+  font-family: 'Cormorant Garamond', ui-serif, Georgia, serif;
+  font-size: var(--ew-weds-fs, clamp(14px, 4.4vw, 18px));
+  font-style: italic;
+  letter-spacing: .06em;
+  opacity: .78;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ew-scene-art { animation: none; }
+  .ew-petals { display: none; }
+  .ew-frame-flora { animation: none; }
+  .ew-heart { animation: none; }
+  .ew-count-cell.is-tick .ew-count-num { animation: none; }
+  html { scroll-snap-type: none; }
+  /* The cue still has to read as a cue, so it keeps the arrow and loses only
+     the movement. */
+  .ew-scroll-arrow { animation: none; transform: rotate(45deg); opacity: .8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-opening .ew-flap,
+  .is-opening .ew-seal-btn { animation-duration: 1ms; }
+  .ew-main { transition: none; }
+}
+
+/* The wide screen's widening, for somebody who has asked for less movement:
+   the cover still arrives at full width, it simply does not travel there. */
+@media (min-width: 900px) and (prefers-reduced-motion: reduce) {
+  html.ew-open .ew-scene { transition: clip-path 1ms linear 200ms; }
+  html.ew-open .ew-scene-names,
+  html.ew-open .ew-couple { transition: opacity 200ms ease 250ms; }
+}
+
+
+/* ==========================================================================
+   THE WIDE LAYOUT
+
+   Below 900px this design is a phone: a card the width of the artwork,
+   centred on a dark ground, every position a fraction of the 390x844 it was
+   drawn at.
+
+   Above 900px it is a different drawing. The arch is wide rather than tall,
+   its opening is a broad cream field instead of a narrow one, and the
+   proportions that place type inside a 390 column place it nowhere useful
+   inside a 1440 one. So the card gives up its width cap, the artwork swaps
+   for the wide exports, and the type moves into a measured column down the
+   middle -- because a line of body text set across 1440px is not a line
+   anybody reads.
+
+   Only the pages whose wide artwork has arrived swap it. The rest keep the
+   treatment they have and simply centre; they are drawn from components
+   rather than from a painting, so they widen without needing a second export.
+   ========================================================================== */
+
+@media (min-width: 900px) {
+  /* The cap that keeps the card phone-shaped is what has to go first.
+     Everything else here is downstream of the card being the whole window. */
+  .ew-card { width: 100%; max-width: none; }
+
+  .ew-stage { background: #f7f4ee; }
+
+  /* One measure for every page, so the invitation reads as one document
+     rather than as pages that happen to follow each other. Set in ch so the
+     column is sized by the type in it rather than by a number picked to look
+     right on one screen. */
+  /* Centred two different ways, because these are two different things.
+
+     Everything on a painted page is absolutely placed over its artwork, and
+     the way to centre one of those is left:50% with a pull back of half its
+     own width. Everything on a page drawn from components is in ordinary
+     flow, and the way to centre one of those is a margin either side.
+
+     They were all in one rule doing the first. On a flow element `left` does
+     nothing at all, but the pull back still applies -- so the countdown, the
+     families, the programme, the questions and the farewell were each shoved
+     exactly half their width to the left of centre. That is the countdown
+     sitting off to one side, the two family columns landing on top of each
+     other in the left half, and the farewell hanging off the right edge. */
+  .ew-scene-names,
+  .ew-welcome-text,
+  .ew-guests-names,
+  .ew-guests-title,
+  .ew-guests-msg,
+  .ew-chips {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(560px, 46vw);
+    max-width: none;
+  }
+
+  .ew-count-grid,
+  .ew-prog-scroll,
+  .ew-faq-scroll,
+  .ew-closing-inner {
+    width: min(560px, 46vw);
+    max-width: none;
+    margin-inline: auto;
+    transform: none;
+  }
+
+  /* ---- the two families, side by side ----
+
+     On a phone the two sides are one under the other because there is room
+     for one column and no more. A desktop has room for both, and the design
+     shows both: Groom's Side on the left, Bride's Side on the right, each
+     with its picture, its parents and the people to ring underneath.
+
+     Stacked here they were also stacked on top of each other -- the column
+     was 560 wide in the middle of a 1440 page and the two sides took the same
+     560. Wider measure, laid out as a row, and each side takes half of it. */
+  .ew-fam-scroll {
+    width: min(980px, 74vw);
+    max-width: none;
+    margin-inline: auto;
+    transform: none;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: min(96px, 7vw);
+    padding-bottom: 4svh;
+  }
+
+  .ew-fam-side {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 420px;
+  }
+
+  /* The gap between the columns is the gap now, not a rule for one under
+     the other. */
+  .ew-fam-side + .ew-fam-side { margin-top: 0; }
+
+  /* The picture has a column to itself up here rather than a third of a
+     phone's width, so it is drawn at the size the design shows. */
+  .ew-fam-figure { width: min(190px, 24svh); }
+
+  /* ---- the wide paintings are shown whole ----
+
+     The cover drifts slowly in and out by a fifth, and the arch's foliage
+     sways. Both are right on a phone, where the drawing is taller than the
+     screen and there is always more of it to move into.
+
+     The wide exports are not: they are composed to 1440 by 800 and shown at
+     exactly that, so a fifth of scale crops the balustrade off both ends and
+     the arch out of its own frame. The movement stays and the crop goes --
+     the drift is a breath now rather than a zoom. */
+  .ew-scene-art { animation-name: ew-drift-wide; }
+  .ew-frame-flora.is-left { animation-name: ew-sway-left-wide; }
+  .ew-frame-flora.is-right { animation-name: ew-sway-right-wide; }
+
+  /* ---- the envelope ----
+
+     A card held in the middle of the screen, not a wall of paper.
+
+     The envelope is drawn to cover: height fills and the width is forced past
+     the viewport so the paper runs edge to edge, which is right on a phone and
+     absurd on a desktop -- at 1440 across it resolved three thousand pixels
+     tall, so all anybody saw was a wax seal the size of a dinner plate.
+
+     Up here it is what the design shows: a portrait card of its own
+     proportions, centred on the cream, with the wax on the seam and the
+     credit underneath. */
+  /* Transparent, and the envelope alone is what is centred.
+
+     The gate used to paint the whole screen cream, which made it a lid over
+     the card rather than a thing standing on it -- lift the flap and what was
+     underneath was more of the lid. The cream is the stage's own, so the
+     cover behind can show through wherever the paper is not.
+
+     The credit comes out of the column and stands at the foot of the page, so
+     the envelope is centred on the screen by itself. That matters: the cover
+     behind is masked to exactly the envelope's box, and a box centred on the
+     screen is the only one that can be described without measuring the line
+     of type underneath it. */
+  .ew-gate {
+    justify-content: center;
+    gap: 0;
+    padding-bottom: 0;
+    background: transparent;
+  }
+
+  .ew-gate > .ew-credit {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 26px;
+    text-align: center;
+  }
+  /* Relative, never static. Everything the envelope is made of -- the pocket,
+     the flap, the wax, the line under it -- is placed absolutely against the
+     envelope, and a static box is not a containing block for any of them.
+     Set static here they all measured themselves against the 1440-wide gate
+     instead: the seal came out 694 square, hanging off the paper and off the
+     page. In flow, still positioned. */
+  /* The envelope's own measure, written down once. The paper is a fixed
+     shape, so its width follows from the height it is given -- and the cover
+     behind it has to be masked to exactly that column, which is the next
+     rule. Two places, one number. */
+  .ew-stage {
+    --ew-env-h: min(74svh, 620px);
+    --ew-env-w: calc(var(--ew-env-h) * 390 / 842);
+  }
+
+  .ew-envelope {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    height: var(--ew-env-h);
+    width: var(--ew-env-w);
+    min-width: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 70px -40px rgba(58, 43, 39, .55);
+  }
+
+  /* ---- and then the card turns out to be the whole screen ----
+
+     The envelope is a phone-shaped card held in the middle of the cream, and
+     the courtyard behind it is painted for 1440 by 800. Opened, the wide
+     painting simply appeared: the flap lifted on a column of paper and the
+     answer was a page four times as wide, arriving all at once.
+
+     So the cover is masked to the envelope's own column until it is opened,
+     and the mask is what widens. The guest sees the flap lift on the
+     courtyard at the width they were holding, and then the courtyard opens
+     out sideways to the full screen -- the same move the Lavish ballroom
+     makes, for the same reason.
+
+     It waits for the paper: the flap has 2200ms of hinging to do and the
+     envelope is taken off the screen at the end of it, so the widening starts
+     just after that rather than underneath it. */
+  .ew-scene {
+    clip-path: inset(
+      calc((100% - var(--ew-env-h)) / 2)
+      calc((100% - var(--ew-env-w)) / 2)
+      round 20px);
+    will-change: clip-path;
+  }
+
+  html.ew-open .ew-scene {
+    clip-path: inset(0 round 0);
+    transition: clip-path 1500ms cubic-bezier(.34, .82, .28, 1) 1900ms;
+  }
+
+  /* The names are set live over the painting and they are measured to the
+     page, not to the column -- so while the cover is still the width of the
+     envelope they would be written across the mask's edges. They arrive with
+     the widening. */
+  .ew-scene-names,
+  .ew-couple { opacity: 0; }
+
+  html.ew-open .ew-scene-names,
+  html.ew-open .ew-couple {
+    opacity: 1;
+    transition: opacity 800ms ease 2700ms;
+  }
+
+  /* No envelope, no opening. A preview that skips the gate is already past
+     all of this and must not perform it -- see the script in the view. */
+  html.ew-instant .ew-scene,
+  html.ew-instant .ew-scene-names,
+  html.ew-instant .ew-couple { transition: none; }
+  /* The words sit on the paper, so they follow the card rather than the
+     window -- the phone rule places them as a percentage of a full-width
+     gate. */
+  .ew-tap { font-size: clamp(15px, 1.5vw, 20px); }
+
+  /* ---- the cover ----
+
+     The wide painting, at last.
+
+     This was the tall phone artwork centred in the middle of a desktop with
+     black either side, and the note here said the wide export could not be
+     used because it had the couple's names painted into it. It does not --
+     it is the same courtyard with an open cream field where the names go, and
+     it had been sitting in the folder unused. The names are set live over it,
+     the same as on a phone.
+
+  /* ---- the cover ----
+     The wide painting, at last.
+     The names sit comfortably in the open courtyard lower area with rich contrast. */
+  .ew-scene { width: 100%; margin: 0; }
+  .ew-scene-art {
+    background-image: var(--ew-art-cover-web, url('/img-sample/templates/elegant-wedding/Background-web.svg.webp'));
+    background-position: center top;
+  }
+  .ew-scene-names {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(640px, 52vw);
+    top: 65%;
+    text-align: center;
+  }
+  .ew-scene-names .ew-name {
+    font-size: clamp(36px, 3vw, 48px);
+    color: var(--maroon, #58111a);
+    line-height: 1.15;
+  }
+  .ew-scene-names .ew-weds {
+    font-size: clamp(15px, 1.2vw, 18px);
+    color: #7a5822;
+    margin: 0.25em 0;
+    letter-spacing: .08em;
+    font-weight: 600;
+  }
+
+  /* The couple stand between the arch and the courtyard name line. */
+  .ew-couple {
+    top: 12%;
+    width: auto;
+    height: min(42svh, 350px);
+  }
+  .ew-couple-art { width: auto; height: 100%; }
+
+  /* ---- the welcome ---- */
+  .ew-frame-art,
+  .ew-frame-flora,
+  .ew-closing-art { background-image: var(--ew-art-frame-web, url('/img-sample/templates/elegant-wedding/Floral-frame-web.svg.webp')); }
+
+  .ew-frame-flora.is-right { display: none; }
+  .ew-frame-flora.is-left {
+    clip-path: inset(64% 0 0 0);
+    transform-origin: 50% 100%;
+  }
+
+  /* Centered gracefully in the wider arch opening with high-contrast type. */
+  /* Centred in the room between the top of the arch's opening and the cue at
+     the foot of the window -- rather than on a point 65% of the way down, which
+     put the lower half of the block wherever its height happened to reach: on
+     a window 600 tall, over the "Scroll down" cue and the bride's name. The
+     block is still centred (the base rule is a flex column), in less room. */
+  .ew-welcome-text {
+    top: 30%;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 64px);
+    transform: translateX(-50%);
+    width: min(620px, 50vw);
+    text-align: center;
+  }
+  .ew-welcome-text .ew-blessing {
+    font-size: clamp(17px, 1.4vw, 21px);
+    line-height: 1.7;
+    color: #3a251e;
+    margin-bottom: 1.8svh;
+  }
+  .ew-welcome-text .ew-eyebrow {
+    font-size: clamp(12px, 1vw, 14px);
+    color: #73501a;
+    letter-spacing: .3em;
+    font-weight: 700;
+    margin-bottom: 1.8svh;
+  }
+  .ew-welcome-text .ew-welcome-msg {
+    font-size: clamp(17px, 1.4vw, 21px);
+    line-height: 1.7;
+    color: #32211c;
+    margin-top: 0;
+    margin-bottom: 2svh;
+  }
+  .ew-welcome-text .ew-heart {
+    width: 20px;
+    height: 18px;
+    margin: 0 auto 1.6svh;
+    fill: var(--maroon, #d3212e);
+  }
+  .ew-welcome-text .ew-welcome-name {
+    font-size: clamp(36px, 3vw, 46px);
+    line-height: 1.15;
+    color: var(--maroon, #58111a);
+  }
+  .ew-welcome-text .ew-welcome-name:first-of-type {
+    margin-top: 0;
+  }
+  .ew-welcome-text .ew-amp {
+    font-size: clamp(18px, 1.4vw, 22px);
+    color: #73501a;
+    font-weight: 600;
+    margin: 0.15em 0;
+  }
+
+  /* ---- dear guests ----
+
+     Laid out inside a scene, not against the window.
+
+     The wide artwork is 1440 x 800 with one torn card in the middle of it and
+     nothing else. It was being stretched to the window (`cover`) while the
+     words were placed in units of the window's own height and width -- so on
+     any window that was not exactly 1.8 : 1 the card came out a different size
+     and in a different place from the words meant to sit on it: the title ran
+     into its top edge, the note sat low in it, and the events went behind it.
+
+     Now the scene is a box of the artwork's own proportions -- as wide as the
+     window allows without being taller than it, centred -- and every measure
+     on the page is a number of artwork units (--ew-u is one of them), taken
+     from the drawing. The words and the card cannot disagree about where the
+     card is, on any window. Clear of the foot of the scene by more than the
+     "Scroll down" cue, which is fixed to the window. */
+  .ew-guests {
+    display: grid;
+    place-items: center;
+    background: #fbf8f5;
+  }
+  .ew-guests-scene {
+    --ew-u: calc(min(100vw, 100svh * 1.8) / 1440);
+    display: block;
+    position: relative;
+    width: min(100vw, calc(100svh * 1.8));
+    aspect-ratio: 1440 / 800;
+  }
+  .ew-guests-art {
+    background-image: var(--ew-art-guests-web, url('/img-sample/templates/elegant-wedding/Dear-guest-web.svg.webp'));
+    background-size: 100% 100%;
+  }
+
+  /* Above the card: names at y 4, title at y 62, clear of the flowers that
+     start at 115. */
+  .ew-guests-names,
+  .ew-guests-title {
+    left: 0;
+    right: 0;
+    width: auto;
+    transform: none;
+    max-width: none;
+  }
+  .ew-guests-names {
+    top: calc(4 / 800 * 100%);
+    font-size: calc(34 * var(--ew-u));
+    line-height: 1.1;
+    color: var(--maroon, #58111a);
+  }
+  .ew-guests-title {
+    top: calc(62 / 800 * 100%);
+    font-size: calc(42 * var(--ew-u));
+    line-height: 1.1;
+    color: #2b1d19;
+  }
+
+  /* The note, inside the card: x 596-844, y 195-565 of the drawing. */
+  .ew-guests-msg {
+    left: calc(596 / 1440 * 100%);
+    right: auto;
+    width: calc(248 / 1440 * 100%);
+    top: calc(195 / 800 * 100%);
+    height: calc(370 / 800 * 100%);
+    max-width: none;
+    max-height: none;
+    transform: none;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: calc(20 * var(--ew-u));
+    line-height: 1.6;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(10, 2, 4, 0.6);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  /* The events, under the card and its flowers (which end at y 645) and clear
+     of the foot: two rows of three end at about y 740. */
+  .ew-chips {
+    top: calc(656 / 800 * 100%);
+    bottom: auto;
+    left: calc(400 / 1440 * 100%);
+    right: auto;
+    width: calc(640 / 1440 * 100%);
+    max-width: none;
+    transform: none;
+    gap: calc(8 * var(--ew-u));
+  }
+  .ew-chip {
+    flex: 0 0 calc((100% - 16 * var(--ew-u)) / 3);
+    font-size: calc(21 * var(--ew-u));
+    padding: .28em .5em;
+    border-width: calc(8 * var(--ew-u));
+    border-image-width: calc(8 * var(--ew-u));
+    color: var(--maroon, #58111a);
+  }
+  /* More than six and there is a third row: a little smaller, so it still ends
+     above the cue. */
+  .ew-chips:has(.ew-chip:nth-child(7)) .ew-chip {
+    font-size: calc(17 * var(--ew-u));
+    padding: .18em .4em;
+    border-width: calc(6 * var(--ew-u));
+    border-image-width: calc(6 * var(--ew-u));
+  }
+
+  /* ---- headings and rules across desktop pages ---- */
+  .ew-h2 {
+    font-size: clamp(28px, 2.3vw, 36px);
+    color: var(--maroon, #58111a);
+    margin: 0 0 1.2svh;
+  }
+  .ew-rule {
+    width: min(980px, 74vw);
+    margin: 0 auto 3svh;
+  }
+
+  /* ---- the pages with no wide artwork of their own ---- */
+  .ew-portraits,
+  .ew-families,
+  .ew-programme,
+  .ew-event,
+  .ew-faqs {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 7svh;
+    padding-bottom: max(7svh, calc(env(safe-area-inset-bottom, 0px) + 64px));
+  }
+
+  /* ---- the countdown ---- */
+  .ew-countdown {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 9svh;
+    padding-bottom: 9svh;
+    justify-content: center;
+  }
+  .ew-count-title {
+    font-size: clamp(38px, 3vw, 48px);
+    color: var(--maroon, #58111a);
+    margin: 0 0 .8svh;
+  }
+  .ew-count-sub {
+    font-size: clamp(24px, 2vw, 30px);
+    color: #554139;
+    margin: .5svh 0 5svh;
+  }
+  .ew-count-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: min(880px, 68vw);
+    gap: min(24px, 2vw);
+  }
+  .ew-count-cell {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: min(24px, 2.8svh) min(18px, 1.6vw);
+    box-sizing: border-box;
+  }
+  .ew-count-num {
+    font-size: clamp(32px, 2.8vw, 46px);
+    line-height: 1;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(30, 8, 12, 0.4);
+  }
+  .ew-count-label {
+    font-size: clamp(11px, 0.9vw, 13px);
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: #f7ede7;
+    opacity: 0.95;
+  }
+
+  /* ---- the two portraits ---- */
+  .ew-portraits {
+    padding-top: 10svh;
+    padding-bottom: 8svh;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: min(56px, 5vw);
+  }
+  .ew-portraits .ew-h2 {
+    position: absolute;
+    top: 7svh;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: var(--maroon, #58111a);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(28px, 2.3vw, 36px);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: none;
+  }
+  .ew-portrait { width: min(300px, 24vw); }
+  .ew-portrait-frame { width: 100%; max-width: min(290px, 35svh); }
+  .ew-portrait-name {
+    font-size: clamp(26px, 2.1vw, 32px);
+    margin-top: 1.6svh;
+  }
+  .ew-posy {
+    width: min(150px, 18svh);
+    margin: 0;
+  }
+
+  /* ---- families ---- */
+  .ew-fam-label {
+    color: #73501a;
+    font-size: clamp(13px, 1.05vw, 16px);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1svh;
+  }
+  .ew-fam-parents {
+    font-size: clamp(17px, 1.35vw, 21px);
+    margin: 1.8svh 0 1.4svh;
+    color: #2b1e1a;
+  }
+  .ew-fam-row {
+    padding: .48em .9em;
+    margin-bottom: 1.2svh;
+    font-size: clamp(14px, 1.1vw, 17px);
+  }
+  .ew-fam-row:not(.is-prominent) .ew-fam-name {
+    color: #221815;
+    font-weight: 600;
+  }
+  .ew-fam-row:not(.is-prominent) .ew-fam-role {
+    color: #55443d;
+  }
+
+  /* ---- programme ---- */
+  .ew-prog-scroll {
+    width: min(680px, 56vw);
+    gap: min(22px, 2.6svh);
+    justify-content: center;
+    padding-bottom: 0;
+  }
+  .ew-prog-card {
+    padding: .75em 1.6em;
+    border-image-width: 14px;
+  }
+  .ew-prog-name {
+    font-size: clamp(26px, 2.2vw, 36px);
+    margin-bottom: 0.2em;
+  }
+  .ew-prog-date {
+    font-size: clamp(14px, 1.15vw, 18px);
+    color: #73501a;
+    font-weight: 600;
+    margin-bottom: 0.3em;
+  }
+  .ew-prog-where {
+    font-size: clamp(13px, 1.05vw, 16px);
+    color: #503d36;
+  }
+
+  /* ---- individual event pages ---- */
+  .ew-event {
+    padding-top: 6svh;
+    padding-bottom: max(6svh, calc(env(safe-area-inset-bottom, 0px) + 64px));
+  }
+  .ew-event-frame {
+    width: min(250px, 28svh);
+    margin-top: 2svh;
+  }
+  /* A short window: the drawing gives up some height so the buttons at the
+     foot of the page stay above the cue rather than under it. */
+  @media (max-height: 760px) {
+    .ew-event-frame { width: min(250px, 23svh); margin-top: 1svh; }
+    .ew-event-flourish { margin-top: 1svh; }
+  }
+  @media (max-height: 640px) {
+    .ew-event-frame { width: min(250px, 19svh); }
+    .ew-event-title { font-size: clamp(32px, 2.8vw, 44px); }
+  }
+  .ew-event-flourish {
+    margin: 2svh 0 0.6svh;
+    font-size: 20px;
+    color: var(--gold, #d6b26a);
+  }
+  .ew-event-title {
+    font-size: clamp(40px, 3.4vw, 52px);
+    margin-bottom: 1.2svh;
+  }
+  .ew-event-guests {
+    font-size: 13.5px;
+    padding: .3em 1.2em;
+    margin-bottom: 2svh;
+  }
+  .ew-event-date {
+    font-size: clamp(20px, 1.6vw, 24px);
+    margin-bottom: 0.8svh;
+  }
+  .ew-event-time {
+    font-size: clamp(15px, 1.2vw, 18px);
+    margin-bottom: 0.6svh;
+  }
+  .ew-event-venue {
+    font-size: clamp(16px, 1.3vw, 19px);
+    color: var(--gold-light, #f0cf8f);
+    margin-bottom: 0.6svh;
+  }
+  .ew-event-address {
+    font-size: clamp(13px, 1.05vw, 15.5px);
+    max-width: min(540px, 50vw);
+    text-align: center;
+  }
+  .ew-event-actions {
+    margin-top: 3.2svh;
+    gap: 18px;
+  }
+  .ew-btn {
+    padding: .75em 1.8em;
+    font-size: 14px;
+  }
+
+  /* ---- faqs ---- */
+  .ew-faq-scroll {
+    width: min(760px, 62vw);
+    gap: 0;
+    justify-content: center;
+    padding-bottom: 0;
+  }
+  .ew-faq {
+    padding: 2.2svh 1.5vw;
+    border-bottom: 1px dashed #cfc5be;
+  }
+  .ew-faq:last-child {
+    border-bottom: none;
+  }
+  .ew-faq-q {
+    font-size: clamp(18px, 1.4vw, 22px);
+    font-weight: 600;
+    color: var(--maroon, #58111a);
+    margin-bottom: 8px;
+  }
+  .ew-faq-a {
+    font-size: clamp(15px, 1.15vw, 18px);
+    line-height: 1.65;
+    color: #43322d;
+  }
+
+  /* ---- closing ---- */
+  .ew-closing-posy {
+    width: min(260px, 20vw);
+    top: 15svh;
+  }
+  .ew-closing {
+    justify-content: center;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .ew-closing-inner {
+    width: min(640px, 52vw);
+    position: absolute;
+    top: 57%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .ew-closing-note {
+    font-size: clamp(17px, 1.35vw, 21px);
+    line-height: 1.6;
+    color: #4a3832;
+    margin-bottom: 1.2svh;
+  }
+  .ew-closing-names {
+    font-size: clamp(38px, 3.4vw, 54px);
+    color: var(--maroon, #58111a);
+    margin: 0 0 2.2svh;
+  }
+  .ew-heart-closing {
+    width: 22px;
+    height: 20px;
+    margin: 0 auto 1.4svh;
+  }
+  .ew-made-big {
+    font-size: 13px;
+    letter-spacing: .16em;
+    color: #73501a;
+  }
+}
+
+/* ==========================================================================
+   The painted pages, asked for once the envelope is on the screen
+
+   Nothing below is visible while the envelope is still shut, and together they
+   are megabytes: the room the names stand in, the floral frame that repeats on
+   three pages, the wall behind Dear Guests, the posy on the farewell. Named in
+   the stylesheet outright they are fetched the moment it is read -- on the same
+   connection, at the same moment, as the three pieces of the envelope, which
+   are the only thing anybody is looking at. On a phone on mobile data that is
+   a card that sits there.
+
+   So they are held back until the page has finished loading, and asked for
+   again at the first press in case the load event never came. By the time
+   somebody has found the seal and pressed it they have been in the cache for
+   seconds. A browser with no script is given them outright -- see the noscript
+   block in the card's own head.
+
+   Written as one block that takes the picture away rather than as a rewrite of
+   each rule: what each of these is, and how it is drawn, stays exactly where
+   it was. */
+html:not(.ew-painted) .ew-scene-art,
+html:not(.ew-painted) .ew-frame-art,
+html:not(.ew-painted) .ew-frame-flora,
+html:not(.ew-painted) .ew-closing-art,
+html:not(.ew-painted) .ew-closing-posy,
+html:not(.ew-painted) .ew-guests-art,
+html:not(.ew-painted) .ew-portrait-frame::before {
+  background-image: none;
+}
+
+/* The same, for the pieces drawn as a border-image: the pill behind a family
+   contact, the card behind a programme entry, the small card behind a chip,
+   the tile behind a countdown number, and the posy. Half a megabyte between
+   them, and every one of them is a page or more below the envelope. */
+html:not(.ew-painted) .ew-posy,
+html:not(.ew-painted) .ew-fam-row,
+html:not(.ew-painted) .ew-fam-row.is-prominent,
+html:not(.ew-painted) .ew-prog-card,
+html:not(.ew-painted) .ew-chip,
+html:not(.ew-painted) .ew-count-cell {
+  background-image: none;
+  border-image-source: none;
+}
+
+
+/* ---- the scroll cue ----
+
+   One pill at the bottom centre of the window, the same place and the same
+   job as every other card's. See the note by ewScroll in the view.
+
+   Centred on the window, which on a wide screen is also the centre of the
+   card: the card is a column in the middle up to 899px and the whole width
+   above it.
+
+   Every colour is one of the card's own variables, so choosing another palette
+   recolours it with everything else: the maroon for the pill, --on-maroon for
+   its words, --gold for its edge. */
+.ew-scroll-btn {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px 7px 18px;
+  border: 1px solid rgba(88, 17, 26, .4);
+  border-color: color-mix(in srgb, var(--maroon, #58111a) 42%, transparent);
+  border-radius: 999px;
+  /* Light, and let through: the card is meant to be visible behind it. The
+     blur keeps the words readable over a busy drawing without making the
+     button opaque. */
+  background: rgba(253, 250, 246, .7);
+  background: color-mix(in srgb, var(--cream, #fdfaf6) 70%, transparent);
+  -webkit-backdrop-filter: blur(6px) saturate(1.1);
+  backdrop-filter: blur(6px) saturate(1.1);
+  color: var(--maroon, #58111a);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(26, 17, 12, .16);
+  transform: translateX(-50%);
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  transition: transform .2s ease, opacity .3s ease;
+}
+.ew-scroll-btn .ew-scroll-text { text-indent: .2em; }
+.ew-scroll-btn svg { width: 12px; height: 7px; flex: none; color: var(--gold-deep, var(--maroon, #a18650)); animation: ew-scroll-bob 1.9s ease-in-out infinite; }
+.ew-scroll-btn:hover { transform: translateX(-50%) translateY(-2px); }
+.ew-scroll-btn:active { transform: translateX(-50%) scale(.96); }
+.ew-scroll-btn:focus-visible { outline: 2px solid var(--maroon, currentColor); outline-offset: 3px; }
+
+@keyframes ew-scroll-bob {
+  0%, 100% { transform: translateY(-1px); }
+  50%      { transform: translateY(3px); }
+}
+
+/* Gone at the foot of the card, and gone while the envelope is still shut --
+   there is nothing to scroll to behind a sealed envelope. `ew-sealed` is set
+   on the document by the gate script and taken off when the seal is pressed. */
+.ew-scroll-btn.is-done,
+html.ew-sealed .ew-scroll-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ew-scroll-btn svg { animation: none; }
+  .ew-scroll-btn { transition: opacity .3s ease; }
+}
+
+
+/* The wide screen's versions of the three ambient movements: the same
+   gestures without the scale that crops a painting composed to the frame. */
+@keyframes ew-drift-wide {
+  0%, 100% { transform: scale(1.02); }
+  50%      { transform: scale(1.045); }
+}
+@keyframes ew-sway-left-wide {
+  0%, 100% { transform: rotate(-0.35deg); }
+  50%      { transform: rotate(0.35deg); }
+}
+@keyframes ew-sway-right-wide {
+  0%, 100% { transform: rotate(0.32deg); }
+  50%      { transform: rotate(-0.32deg); }
+}
+
+/* =====================================================================
+   2026-10-11 -- the newer parts, in this card's own paper and type.
+   Nothing above is changed by them: a card that has none of the new pages
+   switched on, and names that fit, looks exactly as it did.
+   ===================================================================== */
+
+/* ---- rooms for long names (data-ew-fit, the script at the foot) ----
+   Each name block is given the room the painting leaves it, so the script
+   can tell when a long name has run past it and shrink it back in. */
+.ew-scene-names { bottom: var(--ew-cue-room, 64px); }
+.ew-guests-names {
+  box-sizing: border-box;
+  padding: 0 calc(14 / 390 * 100%);
+}
+.ew-guests-names > span { min-width: 0; text-align: center; }
+.ew-guests-title {
+  box-sizing: border-box;
+  padding: 0 calc(16 / 390 * 100%);
+}
+.ew-guests-title > span { display: inline-block; }
+
+/* ---- a function's details, as rows with a gold mark each ---- */
+.ew-ico { width: 1em; height: 1em; flex: none; color: var(--gold, #d6b26a); }
+.ew-ev-info {
+  width: min(100%, 320px);
+  margin: 1.4svh auto 0;
+  padding: 1.1svh 0;
+  border-top: 1px solid rgba(214, 178, 106, .32);
+  border-bottom: 1px solid rgba(214, 178, 106, .32);
+  display: flex;
+  flex-direction: column;
+  gap: 1svh;
+  text-align: left;
+}
+.ew-ev-row { display: flex; align-items: flex-start; gap: 12px; }
+.ew-ev-row > .ew-ico { width: 18px; height: 18px; margin-top: .2em; }
+.ew-ev-text { min-width: 0; flex: 1; }
+.ew-ev-info .ew-event-date { margin: 0; font-size: clamp(15px, 2.3svh, 20px); line-height: 1.25; }
+.ew-ev-info .ew-event-time,
+.ew-ev-info .ew-event-venue,
+.ew-ev-info .ew-event-address { margin: .1em 0 0; line-height: 1.35; overflow-wrap: anywhere; }
+.ew-ev-info .ew-event-address { font-size: clamp(12px, 1.8svh, 16px); opacity: .9; }
+.ew-ev-info .ew-event-address a { color: inherit; text-decoration: underline; text-decoration-color: rgba(214, 178, 106, .5); text-underline-offset: .18em; }
+.ew-ev-label {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(11px, 1.6svh, 14px);
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #fbf1e4;
+}
+.ew-ev-strong { font-weight: 600; color: #fbf1e4; letter-spacing: 0; text-transform: none; }
+.ew-ev-info .ci-hosted .ew-ev-strong { color: var(--gold-light, #e0be7c); }
+html.ci-rtl .ew-ev-info { text-align: right; }
+html.ci-rtl .ew-ev-label { letter-spacing: 0; }
+.ew-event-actions { margin-top: 1.8svh; }
+.ew-ico-btn { width: 1.15em; height: 1.15em; margin: -.15em .45em 0 0; vertical-align: middle; color: currentColor; }
+
+/* The function's own note: at the foot, set apart on a soft lit panel. */
+.ew-ev-note {
+  width: min(100%, 320px);
+  box-sizing: border-box;
+  margin: 1.8svh auto 0;
+  padding: .75em 1em;
+  border: 1px solid rgba(214, 178, 106, .55);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(214, 178, 106, .16), rgba(214, 178, 106, .07));
+  box-shadow: inset 0 0 0 3px rgba(214, 178, 106, .06);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(13px, 1.95svh, 17px);
+  line-height: 1.45;
+  text-align: center;
+  color: #fbf1e4;
+  white-space: pre-line;
+}
+
+/* ---- the countdown, under gold to scratch (countdown.scratch) ---- */
+.ew-countdown.is-scratch .ew-count-cell { overflow: hidden; }
+.ew-countdown.is-scratch .scratch-rub { border-radius: 4px; }
+.ew-countdown .ew-count-num .digit { display: inline-block; }
+.ew-count-hint {
+  margin: calc(16 / 844 * 100%) 0 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(14px, 4.2vw, 17px);
+  color: #8d5a63;
+  transition: opacity .5s ease;
+}
+.ew-count-date {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 8px;
+  max-width: calc(100% - 48px);
+  text-align: center;
+  margin: calc(6 / 844 * 100%) 0 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(15px, 4.4vw, 18px);
+  color: var(--maroon, #58111a);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .7s ease .2s, transform .7s ease .2s;
+}
+.ew-count-date .ew-ico { width: 17px; height: 17px; color: var(--gold-deep, #c8952f); }
+/* The date is the reveal: it arrives once the gold is off. */
+.ew-countdown.is-scratch:has(.scratch-clock.is-rubbed) .ew-count-date { opacity: 1; transform: none; }
+.ew-countdown.is-scratch:has(.scratch-clock.is-rubbed) .ew-count-hint { opacity: 0; }
+
+/* ---- dress code: the questions page's paper ---- */
+.ew-dress-note {
+  margin: 0 0 1svh;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(14px, 2.2svh, 19px);
+  line-height: 1.45;
+  text-align: center;
+  color: #6f6a67;
+  white-space: pre-line;
+}
+.ew-dress-row { text-align: center; }
+/* Heading and list together in the middle of the page, as on Looking
+   forward: a short list under a heading pinned to the top read as a page
+   left half-empty. */
+.ew-dress { justify-content: center; }
+.ew-dress .ew-faq-scroll { flex: 0 1 auto; padding-bottom: 0; }
+
+/* ---- looking forward ---- */
+.ew-forward { justify-content: center; }
+.ew-forward-title {
+  margin: 0;
+  font-family: 'Alex Brush', 'Segoe Script', cursive;
+  font-weight: 400;
+  font-size: clamp(40px, 12vw, 52px);
+  line-height: 1.1;
+  text-align: center;
+  color: var(--maroon, #58111a);
+}
+.ew-forward-line {
+  margin: .1em 0 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(16px, 4.8vw, 20px);
+  text-align: center;
+  color: #6f6a67;
+}
+.ew-forward .ew-faq-scroll { flex: 0 1 auto; }
+.ew-forward-names {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  gap: 1.1svh;
+  text-align: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(15px, 2.3svh, 20px);
+  color: #3a2b27;
+}
+.ew-forward-names.is-two { grid-template-columns: 1fr 1fr; column-gap: 18px; font-size: clamp(13px, 2svh, 17px); }
+.ew-forward-empty { font-style: italic; color: #9b918b; }
+.ew-forward .ew-heart-closing { margin-top: 2svh; }
+
+/* The last page's word between the names keeps the names' own type, as the
+   "&" always has; it is a span only so it can be sized on its own. */
+
+/* A word written between the names over "Dear Guests" in place of the heart. */
+.ew-guests-word { font-size: .62em; opacity: .85; }

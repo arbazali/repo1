@@ -1,0 +1,64 @@
+[data-section]:not([data-section="cover"]) > * {
+  opacity: 0;
+  translate: 0 14px;
+  transition: opacity 760ms cubic-bezier(.22, .61, .28, 1),
+              translate 760ms cubic-bezier(.22, .61, .28, 1);
+}
+
+[data-section]:not([data-section="cover"]) > [aria-hidden="true"],
+[data-section]:not([data-section="cover"]) > video,
+[data-section]:not([data-section="cover"]) > canvas {
+  opacity: 1;
+  translate: none;
+  transition: none;
+}
+
+[data-section]:not([data-section="cover"]).is-seen > * {
+  opacity: 1;
+  translate: none;
+}
+
+/* A beat apart, down the page. Six is as many direct children as any of
+   these designs has; past that they arrive together, which is right -- by
+   then the reader is already reading. */
+[data-section]:not([data-section="cover"]).is-seen > *:nth-child(1) { transition-delay: 60ms; }
+[data-section]:not([data-section="cover"]).is-seen > *:nth-child(2) { transition-delay: 200ms; }
+[data-section]:not([data-section="cover"]).is-seen > *:nth-child(3) { transition-delay: 340ms; }
+[data-section]:not([data-section="cover"]).is-seen > *:nth-child(4) { transition-delay: 460ms; }
+[data-section]:not([data-section="cover"]).is-seen > *:nth-child(5) { transition-delay: 560ms; }
+[data-section]:not([data-section="cover"]).is-seen > *:nth-child(n+6) { transition-delay: 640ms; }
+
+/* Inside the one column most of these pages are built around, the same thing
+   again: the heading, then the line under it, then what it is announcing. */
+[data-section]:not([data-section="cover"]) > * > * {
+  opacity: 0;
+  translate: 0 10px;
+  transition: opacity 700ms cubic-bezier(.22, .61, .28, 1),
+              translate 700ms cubic-bezier(.22, .61, .28, 1);
+}
+
+[data-section]:not([data-section="cover"]).is-seen > * > * { opacity: 1; translate: none; }
+
+[data-section]:not([data-section="cover"]).is-seen > * > *:nth-child(1) { transition-delay: 180ms; }
+[data-section]:not([data-section="cover"]).is-seen > * > *:nth-child(2) { transition-delay: 300ms; }
+[data-section]:not([data-section="cover"]).is-seen > * > *:nth-child(3) { transition-delay: 420ms; }
+[data-section]:not([data-section="cover"]).is-seen > * > *:nth-child(4) { transition-delay: 530ms; }
+[data-section]:not([data-section="cover"]).is-seen > * > *:nth-child(5) { transition-delay: 630ms; }
+[data-section]:not([data-section="cover"]).is-seen > * > *:nth-child(n+6) { transition-delay: 720ms; }
+
+/* The cover is left out of this altogether, rather than switched back on
+   afterwards. It is uncovered rather than scrolled to, and its own opening
+   already says everything this would -- and forcing its children to full
+   opacity turned out to show the photograph behind the closed card, which
+   the design keeps hidden until the card is opened. Opting out is not the
+   same as overriding. */
+
+/* Asked for less movement: everything is simply here. */
+@media (prefers-reduced-motion: reduce) {
+  [data-section]:not([data-section="cover"]) > *,
+  [data-section]:not([data-section="cover"]) > * > * {
+    opacity: 1;
+    translate: none;
+    transition: none;
+  }
+}

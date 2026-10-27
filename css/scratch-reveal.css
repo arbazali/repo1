@@ -1,0 +1,44 @@
+.scratch-clock { position: relative; }
+
+.scratch-tick { position: relative; overflow: hidden; }
+
+.scratch-rub {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  touch-action: none;
+  border-radius: inherit;
+  transition: opacity 480ms ease;
+}
+
+.scratch-clock.is-rubbed .scratch-rub { opacity: 0; pointer-events: none; }
+
+.scratch-burst {
+  position: absolute;
+  inset: -40% -20%;
+  width: 140%;
+  height: 180%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scratch-rub { transition: none; }
+}
+
+/* While there is still something to scratch, a finger on the clock scratches
+   rather than scrolls -- the whole clock is the scratching surface now, not
+   only the panels (see /js/scratch-reveal.js). */
+.scratch-clock:not(.is-rubbed) { touch-action: none; }
+/* Scratching is a drag across text; it must not select the numbers. */
+.scratch-clock { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* The confetti canvas reaches past the clock on purpose, and past the screen's
+   sides with it -- which made the page wider than the phone, so a phone drew
+   the whole card zoomed out and the fixed scroll-down button fell below the
+   bottom of the screen (2026-10-11). Cut at the page's sides; `clip` rather
+   than `hidden`, so the page does not become a scroller of its own and the
+   page-by-page snapping is untouched. */
+[data-section]:has(.scratch-clock) { overflow-x: clip; }

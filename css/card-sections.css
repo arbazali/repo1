@@ -1,0 +1,786 @@
+.card .section,
+.card .panel-block.section,
+.card .block.section {
+  padding: clamp(38px, 8vw, 68px) clamp(18px, 6vw, 36px);
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px;
+}
+
+/* Only where the design has not already said what an eyebrow is. */
+.card .section > .eyebrow {
+  font-size: clamp(11px, 3vw, 12.5px);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  opacity: .75;
+  margin: 0;
+}
+
+.card .section > * { max-width: 34rem; width: 100%; }
+
+/* ---- two short paragraphs, side by side where there is room ---- */
+.card .two-up {
+  display: grid; gap: 18px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 620px) {
+  .card .two-up { grid-template-columns: 1fr 1fr; gap: 28px; }
+}
+.card .bio { margin: 0; line-height: 1.65; opacity: .9; }
+
+/* ---- a timeline of moments ---- */
+.card .timeline {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 22px; text-align: left;
+}
+.card .timeline li { padding-left: 18px; border-left: 1px solid currentColor; opacity: .95; }
+.card .tl-when { margin: 0 0 2px; font-size: .82em; letter-spacing: .1em; text-transform: uppercase; opacity: .6; }
+.card .tl-title { margin: 0 0 4px; font-weight: 600; }
+.card .tl-text { margin: 0; line-height: 1.6; opacity: .85; }
+
+/* ---- named people ---- */
+.card .people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.card .people li { display: flex; flex-direction: column; gap: 1px; }
+.card .p-role { font-size: .8em; letter-spacing: .08em; text-transform: uppercase; opacity: .6; }
+
+/* ---- an hour-by-hour running order ---- */
+.card .runsheet { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.card .runsheet li {
+  display: grid; grid-template-columns: minmax(72px, auto) 1fr;
+  gap: 14px; text-align: left; align-items: baseline;
+}
+.card .rs-time { font-variant-numeric: tabular-nums; opacity: .7; }
+
+/* ---- a verse, a poem, or a line they love ---- */
+.card .passage { margin: 0; font-size: 1.1em; line-height: 1.8; }
+.card .passage-source { margin: 0; font-size: .82em; opacity: .65; }
+
+/* ---- notes, travel, anything that is a titled paragraph ---- */
+.card .notes { display: flex; flex-direction: column; gap: 20px; text-align: left; width: 100%; }
+.card .note-title { margin: 0 0 4px; font-weight: 600; }
+.card .note-by { font-size: .78em; letter-spacing: .08em; text-transform: uppercase; opacity: .55; }
+.card .note-text { margin: 0; line-height: 1.6; opacity: .85; }
+.card .note-code {
+  margin: 6px 0 0; font-size: .82em; letter-spacing: .08em;
+  display: inline-block; padding: 3px 9px; border: 1px dashed currentColor; opacity: .7;
+}
+
+/* ---- gifts ---- */
+.card .gift-note { margin: 0; line-height: 1.65; opacity: .9; }
+.card .gift-links { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 4px; }
+
+/* ---- replying ---- */
+.card .rsvp-prompt { margin: 0; line-height: 1.65; }
+.card .rsvp-by { margin: 0; font-size: .88em; opacity: .7; }
+
+/* ---- Catalogue demo only: the repeating mark over a preview ----
+
+   Lived in all six design stylesheets, identically, until a seventh design
+   loaded this sheet and not one of those — and the mark rendered as a wall of
+   plain text over the card. It is the same in every design by definition, so
+   it belongs in the one sheet they all load.
+
+   `--serif` is whatever the design set; each still supplies its own face. */
+.watermark {
+  position: fixed;
+  inset: -25%;
+  z-index: 60;
+  pointer-events: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px 44px;
+  transform: rotate(-28deg);
+  align-content: center;
+  justify-content: center;
+  opacity: 0.14;
+}
+.watermark span {
+  font-family: var(--serif, 'Cormorant Garamond', serif);
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--maroon-deep, #4a0e17);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   The song
+
+   One button, on every design, in the same place: bottom-left, opposite the
+   scroll cue that every card puts bottom-right. Small, quiet, and never not
+   there -- a guest must always be one tap from silence, and hunting for the
+   mute is how a card gets closed instead.
+
+   Drawn here rather than in each design's own stylesheet because it is the
+   same control on all of them, and because a design that forgot to style it
+   would have an invisible button over its artwork.
+   ========================================================================== */
+.ci-song {
+  position: fixed;
+  left: max(14px, calc((100vw - var(--lw-w, 390px)) / 2 + 14px));
+  bottom: 14px;
+  z-index: 10000;
+
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  border: 1px solid rgba(255, 255, 255, .38);
+  border-radius: 50%;
+  background: rgba(28, 20, 18, .42);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  cursor: pointer;
+
+  /* On the first screen too (2026-10-05, Ahmad): somebody who does not want
+     sound in the room wants the mute button before the music starts, not
+     after the opening. Above every design's cover. */
+  opacity: .9;
+  pointer-events: auto;
+  transition: opacity .4s ease, transform .18s ease;
+}
+
+html.lw-open .ci-song,
+html.ew-open .ci-song,
+html:not(.lw-sealed):not(.ew-sealed) .ci-song {
+  opacity: .9;
+  pointer-events: auto;
+}
+
+.ci-song:active { transform: scale(.93); }
+.ci-song svg { width: 19px; height: 19px; display: block; }
+
+/* The button says what is happening, not what would happen if you pressed
+   it: a crossed-out note while nothing is playing reads as "muted", which is
+   true, and is the state somebody is looking to change. */
+.ci-song .ci-song-on { display: none; }
+.ci-song.is-playing .ci-song-on { display: block; }
+.ci-song.is-playing .ci-song-off { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .ci-song:hover { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ci-song { transition: none; }
+}
+
+/* ==========================================================================
+   The language toggle
+
+   Beside the song, bottom-left, in the same shape and the same weight: they
+   are the two things a guest can change about how they are reading, so they
+   sit together. Where there is no song this one takes the corner alone.
+   ========================================================================== */
+/* ---- the other layout ----
+
+   Wears the same circle as the mute button and sits above it. Only on a card
+   somebody is editing or previewing; see views/partials/_view-toggle.ejs. */
+.ci-view {
+  position: fixed;
+  left: max(14px, calc((100vw - var(--lw-w, 390px)) / 2 + 14px));
+  bottom: 110px;
+  z-index: 40;
+
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  border: 1px solid rgba(255, 255, 255, .38);
+  border-radius: 50%;
+  background: rgba(28, 20, 18, .42);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+}
+.ci-view svg { width: 20px; height: 20px; }
+.ci-view:active { transform: scale(.95); }
+
+.ci-lang {
+  position: fixed;
+  left: max(14px, calc((100vw - var(--lw-w, 390px)) / 2 + 14px));
+  bottom: 62px;
+  /* Over every design's curtain (the highest is 60): a guest who reads Urdu
+     wants the card in Urdu before opening it (2026-10-15, Ahmad: "the
+     language icon should come in the start, it comes after the opening video
+     ends"). */
+  z-index: 70;
+
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  border: 1px solid rgba(255, 255, 255, .38);
+  border-radius: 50%;
+  background: rgba(28, 20, 18, .42);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  cursor: pointer;
+
+  opacity: .9;
+  pointer-events: auto;
+  transition: opacity .4s ease, transform .18s ease;
+}
+.ci-lang svg { width: 19px; height: 19px; display: block; }
+/* The language it is in, for a screen reader. The circle says the rest. */
+.ci-lang .ci-lang-now { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* Alone in the corner when the card has no song on it. */
+body:not(:has(#ciSongBtn)) .ci-lang { bottom: 14px; }
+
+html.lw-open .ci-lang,
+html.ew-open .ci-lang,
+html:not(.lw-sealed):not(.ew-sealed) .ci-lang {
+  opacity: .9;
+  pointer-events: auto;
+}
+
+.ci-lang:active { transform: scale(.93); }
+
+/* Shut is shut.
+
+   `display: grid` from a class beats the browser's own [hidden] rule, so the
+   list sat open over the envelope from the first frame -- before the card had
+   even been opened, and with no button beside it, because the button waits
+   for the envelope. */
+.ci-lang-menu[hidden] { display: none; }
+
+.ci-lang-menu {
+  position: fixed;
+  left: max(14px, calc((100vw - var(--lw-w, 390px)) / 2 + 14px));
+  bottom: 106px;
+  z-index: 71;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, .3);
+  background: rgba(28, 20, 18, .78);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.ci-lang-menu button {
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  padding: 8px 14px;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.ci-lang-menu button:hover { background: rgba(255, 255, 255, .14); }
+.ci-lang-menu button.is-on { background: rgba(255, 255, 255, .2); font-weight: 600; }
+
+/* The face the card is read in, once a language that wants its own is chosen.
+   Set on the root by /js/lang.js, so it reaches every word at once without
+   any design having to know which languages exist. */
+html[dir="rtl"] .lw-card,
+html[dir="rtl"] .ew-card,
+html[dir="rtl"] .jb-card,
+html[dir="rtl"] .dst-card,
+html.ci-rtl .lw-card,
+html.ci-rtl .ew-card,
+html.ci-rtl .jb-card,
+html.ci-rtl .dst-card {
+  font-family: var(--ci-lang-font, inherit);
+}
+
+/* Right to left is a reading direction, not a mirror. The artwork, the
+   envelope and the layout stay exactly as drawn -- only the words turn round,
+   which is what every printed Urdu invitation does. */
+html[dir="rtl"] [data-bind],
+html[dir="rtl"] [data-word],
+html.ci-rtl [data-bind],
+html.ci-rtl [data-word] { direction: rtl; }
+
+/* Urdu inside a box drawn for English.
+
+   Every line on these cards is placed to the point and sized in cqw against a
+   390-wide card -- "Tap to Open" at 9.2cqw fits because it is eleven Latin
+   characters. The same line in Urdu is a single connected run of Nastaliq
+   that is both longer and taller, and at the English size it walked out of
+   both sides of the card.
+
+   So a card being read right to left gives its type room: a little smaller, a
+   line height that does not clip the descenders Nastaliq hangs below the
+   baseline, and -- the part that actually fixes it -- a width it is allowed to
+   use and a promise to shrink rather than spill. Nothing moves; the words fit
+   where they already are. */
+html.ci-rtl [data-bind],
+html.ci-rtl [data-word],
+html[dir="rtl"] [data-bind],
+html[dir="rtl"] [data-word] {
+  font-size: 0.86em;
+  line-height: 1.7;
+  /* Nastaliq sits well below its baseline and the ascenders reach high; a box
+     sized for Latin clips both ends without this. */
+  padding-block: .12em;
+  /* Never wider than the card. Long words break rather than push the line
+     out of the frame -- an Urdu line is one connected run and has no spaces
+     to break at. */
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-wrap: balance;
+}
+
+/* The invitation to open.
+
+   In English this line is placed to the point -- 30.5% from the left, no right
+   edge -- because "Tap to Open" is eleven characters and its length is known.
+   The Urdu is one connected run of Nastaliq half again as long, so a line with
+   a left edge and nothing else walks straight off both sides of the card.
+
+   Given both edges and centred between them, it cannot. It sits where the
+   English sat, in the middle of the same band of paper. And the script face
+   goes: Arizonia has no Arabic in it, so the browser was falling back
+   silently to whatever it had. */
+html.ci-rtl .lw-tap,
+html[dir="rtl"] .lw-tap {
+  left: 8%;
+  right: 8%;
+  text-align: center;
+  transform-origin: center center;
+  font-family: var(--ci-lang-font, serif);
+  font-size: 6.4cqw;
+  line-height: 1.9;
+}
+
+html.ci-rtl .lw-until,
+html[dir="rtl"] .lw-until { font-size: 3.6cqw; line-height: 1.9; }
+
+/* Four cells across a fixed grid. The Urdu words are longer than "min" and
+   "sec" and there is no more room, so they are set smaller and the tracking
+   that spaces out Latin capitals is taken off -- it does nothing for an
+   Arabic script but take width. */
+html.ci-rtl .lw-count-label,
+html[dir="rtl"] .lw-count-label {
+  font-size: 2.5cqw;
+  letter-spacing: 0;
+  line-height: 1.9;
+}
+
+/* The names, the headings and the message are already given both edges by the
+   design, so they only need the size and the room to breathe that the block
+   above gives every translated line. */
+
+@media (hover: hover) and (pointer: fine) {
+  .ci-lang:hover { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ci-lang { transition: none; }
+}
+
+
+/* ---- a countdown counts the same way in every language ----
+
+   Urdu and Punjabi are written right to left, and the whole card is turned
+   round for them, correctly. A countdown is the one thing on it that must not
+   turn: it is a row of numbers, and numbers run left to right in Urdu exactly
+   as they do in English. Laid out right to left, the row read
+
+       53 minutes : 21 hours : 78 days
+
+   which is not a countdown at all -- and it was doing that on every Urdu card
+   in the catalogue.
+
+   Only the row of boxes. The heading above it and the caption under it are
+   sentences, and sentences in Urdu belong right to left with everything else.
+
+   `.countdown` covers the designs built from the shared sections; the two
+   painted designs name their own grid. */
+.countdown,
+.lw-count-grid,
+.ew-count-grid { direction: ltr; }
+
+/* On a phone the four boxes wrapped three-and-one, which left the separator
+   between minutes and seconds dangling on the end of the first row like a
+   typo. There is room for all four across a 375px screen once the boxes stop
+   insisting on 82px each and the separators step out of the way: the widest
+   label, "Seconds", is 65px.
+
+   flex: 1 1 0 rather than a four-column grid, so a countdown showing three
+   boxes on the day itself still fills the row instead of leaving a hole. */
+@media (max-width: 420px) {
+  .countdown { flex-wrap: nowrap; gap: 6px; }
+  .countdown .cd-sep { display: none; }
+  .countdown .countdown-box { flex: 1 1 0; min-width: 0; padding-left: 4px; padding-right: 4px; }
+}
+
+
+/* ---- a line that was never translated reads the way it was written ----
+
+   An Urdu card is turned right to left, and everything on it is laid out that
+   way -- including the lines nobody translated. A date left as "4 December
+   2026", a venue left as "Bhatti's House", a name the studio chose not to put
+   into Urdu: laid out right to left those come apart. The punctuation moves to
+   the wrong end, a house number ends up after the street, and a reader has to
+   work out the order for themselves.
+
+   `unicode-bidi: plaintext` asks each line to take its direction from its own
+   first real letter instead of from the page. An Urdu line stays right to
+   left; an English line left in the middle of it goes left to right, on its
+   own, with no attribute on it and nothing to keep in step. It costs nothing
+   on a card that is fully translated, because every line there starts with an
+   Urdu letter and gets the direction it already had.
+
+   Applied to the marks the cards already carry -- data-bind is the couple's
+   own words, data-word is ours -- and then to every line of type on the card,
+   because those two marks are not the whole card.
+
+   They are put on what the editor can click, and plenty of a card is written
+   from a list rather than from a field: the questions and their answers, the
+   programme, the people to ring on each side, everything printed on a
+   function's own page. None of that carries a mark, so on an Urdu card it was
+   the only text still being laid out right to left whatever it said -- which
+   is a question mark at the wrong end of "What should I wear?" and a house
+   number after its street.
+
+   Every element that holds a line, rather than every element: `plaintext`
+   decides the direction of a paragraph from its own first letter, so it
+   belongs on the things that are paragraphs. Alignment is deliberately not
+   set here -- a line that inherits `start` follows the direction this rule
+   works out, and a design that centres its own text goes on centring it. */
+[dir="rtl"] [data-bind],
+[dir="rtl"] [data-word],
+[dir="rtl"] p,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6,
+[dir="rtl"] li,
+[dir="rtl"] dt,
+[dir="rtl"] dd,
+[dir="rtl"] td,
+[dir="rtl"] th,
+[dir="rtl"] span,
+[dir="rtl"] a,
+[dir="rtl"] button,
+[dir="rtl"] figcaption,
+[dir="rtl"] blockquote,
+[dir="rtl"] summary {
+  unicode-bidi: plaintext;
+}
+
+/* And where such a line is a block of its own, it is aligned the way it
+   reads. `start` follows the direction the rule above just worked out, so an
+   Urdu line stays hard right and an English one goes hard left, rather than
+   an English line sitting right-aligned with its full stop leading. */
+[dir="rtl"] p[data-bind],
+[dir="rtl"] div[data-bind],
+[dir="rtl"] h1[data-bind],
+[dir="rtl"] h2[data-bind],
+[dir="rtl"] h3[data-bind],
+[dir="rtl"] li[data-bind] {
+  text-align: start;
+}
+
+/* ---- Urdu and Punjabi are set larger ----
+
+   Nastaliq sits much smaller on the line than Latin at the same point size:
+   the letterforms hang below and loop above, so the body of a word is a
+   fraction of the height a Latin word of the same size fills. Set at the size
+   the English was drawn at, an Urdu card reads as fine print.
+
+   A fifth larger. Two fifths was tried first and overflowed: these designs are
+   composed to fixed frames -- a card, a chip, an arch with an opening cut in
+   it -- and forty per cent more type does not fit in a box that was drawn for
+   the English.
+
+   Only where a line of writing sits in a space that can take it. The pieces
+   that are drawn to a fixed size -- the countdown cards, the function chips,
+   the contact rows -- keep the size they were designed at, because those look
+   right as they are and are the first things to burst. */
+html[lang="ur"] [data-bind],
+html[lang="ur"] [data-word],
+html[lang="pa"] [data-bind],
+html[lang="pa"] [data-word] {
+  font-size: 1.2em;
+}
+
+/* Nastaliq needs the room between lines as well as on them -- its descenders
+   run into the line beneath at the leading a Latin face is happy with. */
+html[lang="ur"] [data-bind],
+html[lang="pa"] [data-bind] {
+  line-height: 1.85;
+}
+
+/* The boxes that were drawn to a size, left at it.
+
+   A countdown card, a function chip and a contact row are all a fixed shape
+   with a word in the middle. Growing the word does not grow the box; it
+   overflows it, and on the countdown it pushed the four cards out of their
+   grid. These read perfectly well as they are. */
+html[lang="ur"] .cd-num, html[lang="pa"] .cd-num,
+html[lang="ur"] .cd-label, html[lang="pa"] .cd-label,
+html[lang="ur"] .ew-count-num, html[lang="pa"] .ew-count-num,
+html[lang="ur"] .ew-count-label, html[lang="pa"] .ew-count-label,
+html[lang="ur"] .lw-count-num, html[lang="pa"] .lw-count-num,
+html[lang="ur"] .lw-count-label, html[lang="pa"] .lw-count-label,
+html[lang="ur"] .ew-chip, html[lang="pa"] .ew-chip,
+html[lang="ur"] .ew-fam-phone, html[lang="pa"] .ew-fam-phone,
+html[lang="ur"] .digit, html[lang="pa"] .digit {
+  font-size: 1em;
+}
+
+/* And nothing may burst its frame.
+
+   Where a line does outgrow the space it was drawn for, it wraps and the
+   space scrolls rather than the words spilling over the artwork. A card is a
+   composition; type crossing the edge of a painted frame is worse than type
+   that had to wrap. */
+html[lang="ur"] [data-bind],
+html[lang="pa"] [data-bind] {
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+/* ==========================================================================
+   Nothing moves behind a cover that has not been opened
+
+   Every design in the catalogue is a card behind something a guest has to
+   act on -- an envelope to unseal, a knot to untie, doors to part. The
+   opening is the first thing the invitation does, and a card that can be
+   scrolled past it has given the whole thing away before it started.
+
+   Four spellings, because these designs named the locked state differently as
+   they were built: `gate-open` for the six that share card-scroll.js, and one
+   each for Elegant, Lavish and Jashan-e-Bahara, which animate their own
+   covers. Held together here rather than repeated in eight stylesheets,
+   and last in the cascade so it cannot be half-overridden by one of them.
+
+   Four properties, because one is not enough:
+
+   `overflow` on the root is the lock itself. On the body alone it works only
+   by propagation -- the viewport takes its overflow from the body when the
+   root's is `visible` -- and that propagation stops the moment any stylesheet
+   gives the root an overflow of its own. On the root it is unconditional.
+
+   `overscroll-behavior` stops the gesture reaching whatever is behind the
+   card: in an iframe -- the panel's live preview, the storefront's -- a flick
+   that finds nothing to scroll here scrolls the page around it instead.
+
+   `touch-action` is the one that matters on a phone. A locked root stops a
+   wheel everywhere and stops a finger nowhere on iOS, where a touch drag on a
+   clipped document still rubber-bands the page off the top of the envelope.
+
+   And the body is taken out of flow: fixed at the four corners it is exactly
+   the screen, which is the only state iOS has never found a way to scroll. */
+html.gate-open,
+html.ew-sealed,
+html.lw-sealed,
+html.jb-sealed,
+html.dst-sealed {
+  overflow: hidden;
+  height: 100%;
+  scroll-snap-type: none;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+html.gate-open > body,
+html.ew-sealed > body,
+html.lw-sealed > body,
+html.jb-sealed > body,
+html.dst-sealed > body {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  touch-action: none;
+}
+
+/* ==========================================================================
+   THE WORDMARK
+
+   The same block as the one in /css/wordmark.css, which is where it belongs and
+   where it is maintained. Repeated here because a card page loads none of the
+   application's stylesheets -- it loads its own design and this file, and
+   nothing else -- and six lines of CSS repeated is cheaper for a guest on
+   mobile data than a stylesheet fetched for one line of type. Change both.
+
+   "Ceremonia Invites" is set one way, everywhere it is written.
+
+   It was set six ways: Cormorant at 27 in the shop's bar, Cormorant at 40 in
+   its footer, the account sidebar's display face with "Ceremonia" bold and
+   "Invites" not, a bare span on the sign-up screens inheriting whatever was
+   around it, a 12.5px bold sans in the platform admin, and the card's own
+   serif on "Made with Ceremonia Invites". Six settings of two words is not a
+   name, it is six names.
+
+   One class, and the only thing a place is allowed to change is how big it is
+   and what colour: --ci-wordmark-size, and colour from whatever it sits in.
+   Everything that makes it the name -- the face, the weight, the fit of the
+   letters -- is decided here.
+
+   Cormorant Garamond, because that is what the shop front and the card credit
+   already used and it is the face the invitations are set in. Every surface
+   that prints the name loads it: see /css/fonts.css and
+   /css/fonts/cormorant-garamond.css.
+
+   Never italic, never uppercased, never letter-spaced apart: those are the
+   three things a page does to a run of text that would turn the name into
+   decoration. Said outright so a heading style further down a page cannot do
+   any of them by inheritance. */
+.ci-wordmark {
+  font-family: 'Cormorant Garamond', ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: var(--ci-wordmark-size, 27px);
+  font-weight: 600;
+  font-style: normal;
+  font-variant: normal;
+  letter-spacing: -.02em;
+  line-height: 1.05;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+/* The name inside a line of other words -- "Made with Ceremonia Invites" --
+   where the whole line is the credit and setting only the two words apart
+   would read as a link dropped into a sentence. */
+.ci-wordmark-inline {
+  font-family: 'Cormorant Garamond', ui-serif, Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: -.01em;
+  text-transform: none;
+}
+
+/* Where the name was written as two pieces so one could be bold. It is one
+   name; the pieces are kept in the markup only because a screen reader and a
+   search engine both read the element, not the file. */
+.ci-wordmark strong,
+.ci-wordmark b {
+  font-weight: inherit;
+}
+
+/* The credit at the foot of a card.
+
+   It is the one line on an invitation that sells the next one, and six of the
+   eight designs set it at 12px, which on a phone is the small print at the
+   bottom of a receipt. Set here rather than in each design, so it is the same
+   line on every card -- the designs still choose its colour. */
+.credit-tag { font-size: 15px; }
+
+/* ==========================================================================
+   THE CREDIT AT THE FOOT OF EVERY CARD
+
+   The mark, then the words, then a link that looks like one.
+
+   Three designs draw this line themselves -- Elegant, Lavish and Jashan each
+   set it in their own type and their own colour -- so what is decided here is
+   only what is true of it everywhere: how big it is, that the mark travels
+   with it, that it is underlined, and that it moves.
+
+   Small. A guest came to read an invitation, and a badge that asks to be
+   noticed on a page about somebody's wedding is the fastest way to be
+   resented. Thirteen pixels and a mark the height of the type.
+
+   Underlined, because it goes somewhere. A line of type that turns out to be
+   a link only once you have touched it is a link almost nobody touches, and
+   this line is the whole of the product's word of mouth.
+
+   And it moves, very slightly, on a loop with a long rest in it -- enough for
+   the eye to catch once while the page is still, not enough to compete with
+   anything a guest is actually reading.
+   ========================================================================== */
+.credit-tag,
+.ew-credit,
+.lw-credit,
+.lw-closing-credit,
+.jb-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: .5em;
+  font-size: 13px;
+  line-height: 1.2;
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .22em;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+/* The mark, at the height of the words beside it. */
+.credit-mark {
+  width: 1.45em;
+  height: 1.45em;
+  flex: none;
+  object-fit: contain;
+  border-radius: 3px;
+  /* It is the thing that moves. The words stay still and legible; a line of
+     type that wobbles is a line nobody can read. */
+  animation: ci-credit-jiggle 5s ease-in-out infinite;
+  transform-origin: 50% 60%;
+}
+
+@keyframes ci-credit-jiggle {
+  /* Four fifths of the loop is rest. The movement is a beat, not a state. */
+  0%, 78%, 100% { transform: rotate(0deg) translateY(0); }
+  82%  { transform: rotate(-7deg) translateY(-1px); }
+  87%  { transform: rotate(6deg)  translateY(0); }
+  92%  { transform: rotate(-3deg) translateY(-.5px); }
+  96%  { transform: rotate(1.5deg) translateY(0); }
+}
+
+/* A link that is being pressed says so. */
+a.credit-tag:hover,
+a.ew-credit:hover,
+a.lw-credit:hover,
+a.jb-credit:hover {
+  text-decoration-color: currentColor;
+}
+
+a.credit-tag:focus-visible,
+a.ew-credit:focus-visible,
+a.lw-credit:focus-visible,
+a.jb-credit:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credit-mark { animation: none; }
+}
+
+/* ------------------------------------------------------------- animations
+
+   An animation chosen as artwork is a <video> standing where a picture would
+   -- see views/partials/_art.ejs. Every design sizes its artwork with rules
+   written for an <img>, and a video obeys the same ones, so nothing has to be
+   said per design except this: fill the box the same way a picture would,
+   and never be clicked on. */
+video.is-motion {
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  background: transparent;
+  /* These are cut on a black stage, not a white one -- MP4 carries no alpha
+     channel, so the black around the drawing plays back as a black rectangle
+     unless something takes it back out. `screen` treats black as see-through
+     and keeps everything lighter than that, which is exactly what a bright
+     line drawing on black needs. */
+  mix-blend-mode: screen;
+}
+
+/* Asked for less movement: the still it was drawn from, and no film. The
+   poster stays because the element stays; only the playing stops. */
+@media (prefers-reduced-motion: reduce) {
+  video.is-motion { animation: none; }
+}
